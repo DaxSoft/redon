@@ -69,10 +69,133 @@ export const scanKeysCommand = {
   })
 };
 
+export const createProfileCommand = {
+  name: "connection.createProfile",
+  requestSchema: connectionProfileSchema,
+  responseSchema: connectionProfileSchema
+};
+
+export const getHashCommand = {
+  name: "redis.getHash",
+  requestSchema: z.object({
+    connectionId: z.string(),
+    key: z.string()
+  }),
+  responseSchema: z.array(z.tuple([z.string(), z.string()]))
+};
+
+export const getStringCommand = {
+  name: "redis.getString",
+  requestSchema: z.object({
+    connectionId: z.string(),
+    key: z.string()
+  }),
+  responseSchema: z.string().nullable()
+};
+
+export const getMetricsCommand = {
+  name: "redis.getMetrics",
+  requestSchema: z.object({
+    connectionId: z.string()
+  }),
+  responseSchema: z.object({
+    memoryUsage: z.string(),
+    opsPerSec: z.number(),
+    hitRate: z.string(),
+    connectedClients: z.number(),
+    expiredKeys: z.number(),
+    totalKeys: z.number()
+  })
+};
+
+export const openConnectionCommand = {
+  name: "connection.open",
+  requestSchema: z.object({
+    connectionId: z.string()
+  }),
+  responseSchema: z.object({
+    success: z.boolean(),
+    error: z.string().optional()
+  })
+};
+
+export const closeConnectionCommand = {
+  name: "connection.close",
+  requestSchema: z.object({
+    connectionId: z.string()
+  }),
+  responseSchema: z.object({
+    success: z.boolean()
+  })
+};
+
+export const listQueuesCommand = {
+  name: "bullmq.listQueues",
+  requestSchema: z.object({
+    connectionId: z.string()
+  }),
+  responseSchema: z.array(z.object({
+    name: z.string(),
+    prefix: z.string(),
+    waiting: z.number(),
+    active: z.number(),
+    delayed: z.number(),
+    completed: z.number(),
+    failed: z.number(),
+    paused: z.boolean()
+  }))
+};
+
+export const listJobsCommand = {
+  name: "bullmq.listJobs",
+  requestSchema: z.object({
+    connectionId: z.string(),
+    queueName: z.string(),
+    prefix: z.string().optional()
+  }),
+  responseSchema: z.array(z.object({
+    id: z.string(),
+    queueName: z.string(),
+    name: z.string(),
+    status: z.enum(["waiting", "active", "delayed", "completed", "failed", "retrying", "stalled", "paused"]),
+    attemptsMade: z.number(),
+    attemptsLimit: z.number().nullable(),
+    progress: z.number().nullable(),
+    createdAt: z.string().nullable(),
+    processedAt: z.string().nullable(),
+    finishedAt: z.string().nullable(),
+    durationMs: z.number().nullable()
+  }))
+};
+
+export const getTelemetryCommand = {
+  name: "redis.getTelemetry",
+  requestSchema: z.object({
+    connectionId: z.string(),
+    queueName: z.string().optional()
+  }),
+  responseSchema: z.array(z.object({
+    timestampIso: z.string(),
+    opsPerSecond: z.number().nullable(),
+    usedMemoryBytes: z.number().nullable(),
+    connectedClients: z.number().nullable(),
+    hitRate: z.number().nullable()
+  }))
+};
+
 export const ipcCommands = [
   listProfilesCommand,
   testConnectionCommand,
-  scanKeysCommand
+  scanKeysCommand,
+  createProfileCommand,
+  getHashCommand,
+  getStringCommand,
+  getMetricsCommand,
+  openConnectionCommand,
+  closeConnectionCommand,
+  listQueuesCommand,
+  listJobsCommand,
+  getTelemetryCommand
 ] as const;
 
 export type ConnectionProfile = z.infer<typeof connectionProfileSchema>;

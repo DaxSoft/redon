@@ -54,3 +54,14 @@ model ModuleSetting {
   value     String
   updatedAt DateTime @updatedAt
 }
+
+model MetricTelemetry {
+  id               String   @id @default(uuid())
+  connectionId     String
+  queueName        String?
+  timestampIso     String
+  opsPerSecond     Float?
+  usedMemoryBytes  Float?
+  connectedClients Int?
+  hitRate          Float?
+}

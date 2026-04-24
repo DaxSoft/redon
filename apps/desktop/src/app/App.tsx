@@ -34,6 +34,10 @@ import {
   Zap
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useEffect } from "react";
+import { useRedis } from "../hooks/useRedis";
+import { invokeIpc } from "../ipc-client";
+import { createProfileCommand } from "@redon/ipc-contracts";
 
 import {
   Badge,
@@ -57,34 +61,6 @@ const navItems = [
   { label: "Pub/Sub", icon: Radio, active: false },
   { label: "Lua", icon: FileCode2, active: false },
   { label: "Settings", icon: Settings, active: false }
-] as const;
-
-interface KeyRow {
-  readonly key: string;
-  readonly type: "namespace" | "string" | "stream" | "hash";
-  readonly count: string;
-  readonly selected?: boolean;
-}
-
-const keyRows: readonly KeyRow[] = [
-  { key: "bull:email", type: "namespace", count: "1,204" },
-  { key: "bull:webhook", type: "namespace", count: "1,102" },
-  { key: "bull:sync", type: "namespace", count: "982" },
-  { key: "bull:image", type: "namespace", count: "768" },
-  { key: "session:user:42", type: "string", count: "1" },
-  { key: "cache:products", type: "string", count: "1" },
-  { key: "stream:orders", type: "stream", count: "1,842" },
-  { key: "rate_limit:api", type: "string", count: "1" },
-  { key: "hash:user:1001", type: "hash", count: "1", selected: true }
-] as const;
-
-const hashFields = [
-  ["id", "string", "1001", "4 B"],
-  ["email", "string", "alice@example.com", "17 B"],
-  ["name", "string", "Alice Johnson", "13 B"],
-  ["plan", "string", "pro", "3 B"],
-  ["created_at", "string", "2024-05-20T10:15:30Z", "20 B"],
-  ["last_login", "string", "2024-05-24T11:18:05Z", "20 B"]
 ] as const;
 
 const queues = [
@@ -123,6 +99,63 @@ function statusTone(status: string): "success" | "info" | "warning" | "danger" {
 }
 
 export function App() {
+  const {
+    profiles,
+    fetchProfiles,
+    activeProfileId,
+    openConnection,
+    metrics,
+    fetchMetrics,
+    keys,
+    fetchKeys,
+    selectedKey,
+    setSelectedKey,
+    selectedKeyData,
+    fetchKeyData,
+    queues,
+    fetchQueues,
+    selectedQueue,
+    setSelectedQueue,
+    jobs,
+    fetchJobs,
+    telemetry,
+    fetchTelemetry
+  } = useRedis();
+
+  useEffect(() => {
+    if (activeProfileId) {
+        const interval = setInterval(() => {
+            fetchMetrics(activeProfileId);
+            fetchQueues(activeProfileId);
+            fetchTelemetry(activeProfileId);
+        }, 5000);
+        return () => clearInterval(interval);
+    }
+  }, [activeProfileId]);
+
+  const handleCreateConnection = async () => {
+
+    try {
+      await invokeIpc(createProfileCommand, {
+        id: crypto.randomUUID(),
+        name: "Local Redis",
+        host: "127.0.0.1",
+        port: 6379,
+        username: null,
+        database: 0,
+        tlsEnabled: false,
+        credentialRef: null,
+        color: null,
+        tags: []
+      });
+      fetchProfiles();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const activeProfile = profiles.find(p => p.id === activeProfileId);
+
   return (
     <div className="app-root">
       <aside className="sidebar">
@@ -143,52 +176,59 @@ export function App() {
           ))}
         </nav>
 
-        <Panel className="connection-card">
-          <div className="connection-name">prod-cache-eu</div>
-          <dl>
-            <dt>Redis</dt>
-            <dd>7.2.4</dd>
-            <dt>Uptime</dt>
-            <dd>12d 04:21:18</dd>
-            <dt>Mode</dt>
-            <dd>Standalone</dd>
-            <dt>Memory</dt>
-            <dd>16.0 GB</dd>
-            <dt>Used</dt>
-            <dd>5.62 GB (35.1%)</dd>
-          </dl>
-          <StatusDot label="Connected" tone="success" />
-        </Panel>
+        {activeProfile && (
+            <Panel className="connection-card">
+            <div className="connection-name">{activeProfile.name}</div>
+            <dl>
+                <dt>Host</dt>
+                <dd>{activeProfile.host}:{activeProfile.port}</dd>
+                <dt>Mode</dt>
+                <dd>Standalone</dd>
+            </dl>
+            <StatusDot label="Connected" tone="success" />
+            </Panel>
+        )}
       </aside>
 
       <main className="main-shell">
         <header className="topbar">
           <div className="connection-select">
             <span>Connection</span>
-            <button type="button">
-              <Database size={16} />
-              prod-cache-eu / db0
-              <Menu size={14} />
-            </button>
+            <select 
+                value={activeProfileId || ""} 
+                onChange={(e) => openConnection(e.target.value)}
+                style={{ padding: "0 10px" }}
+            >
+                <option value="" disabled>Select Connection</option>
+                {profiles.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+            </select>
           </div>
-          <Badge tone="success">Connected</Badge>
-          <div className="latency">Latency: <strong>0.41 ms</strong></div>
+          <Badge tone={activeProfileId ? "success" : "muted"}>
+            {activeProfileId ? "Connected" : "Disconnected"}
+          </Badge>
+          <div className="latency">Latency: <strong>0.00 ms</strong></div>
           <CommandInput icon={<Command size={15} />} placeholder="Quick command or search...  Ctrl K" />
-          <Button icon={<RefreshCw size={16} />}>Refresh</Button>
-          <Button icon={<Plus size={16} />}>New Connection</Button>
+          <Button icon={<RefreshCw size={16} />} ariaLabel="Refresh">Refresh</Button>
+          <div onClick={handleCreateConnection}>
+             <Button icon={<Plus size={16} />}>New Connection</Button>
+          </div>
           <Button icon={<MoreVertical size={16} />}>Actions</Button>
         </header>
 
-        <div className="breadcrumb">redis://prod-cache-eu:6379/0 &gt; queues &gt; overview</div>
+        {activeProfileId && (
+            <div className="breadcrumb">redis://{activeProfile?.host}:{activeProfile?.port}/{activeProfile?.database} &gt; queues &gt; overview</div>
+        )}
 
         <section className="workspace">
           <div className="metric-grid">
-            <MetricCard icon={<Database size={23} />} label="Memory Usage" value="5.62 GB" detail="35.1% of 16.0 GB" trend="up" />
-            <MetricCard sparkline label="Ops / sec" value="128.6K" detail="12.4% vs 1m ago" trend="up" />
-            <MetricCard sparkline label="Hit Rate" value="98.74%" detail="0.21% vs 1m ago" trend="up" />
-            <MetricCard icon={<Server size={23} />} label="Connected Clients" value="52" detail="3 vs 1m ago" trend="up" />
-            <MetricCard icon={<Clock3 size={23} />} sparkline label="Expired Keys" value="21.4K" detail="8.1% vs 1m ago" trend="up" />
-            <MetricCard icon={<Database size={23} />} sparkline label="Total Keys" value="2.48M" detail="1.6% vs 1m ago" trend="up" />
+            <MetricCard icon={<Database size={23} />} label="Memory Usage" value={metrics?.memoryUsage || "0 B"} detail="-" trend="up" />
+            <MetricCard sparkline sparklineData={telemetry.map((t: any) => t.opsPerSecond)} label="Ops / sec" value={metrics?.opsPerSec?.toString() || "0"} detail="-" trend="up" />
+            <MetricCard sparkline sparklineData={telemetry.map((t: any) => t.hitRate)} label="Hit Rate" value={metrics?.hitRate || "0%"} detail="-" trend="up" />
+            <MetricCard icon={<Server size={23} />} label="Connected Clients" value={metrics?.connectedClients?.toString() || "0"} detail="-" trend="up" />
+            <MetricCard icon={<Clock3 size={23} />} sparkline label="Expired Keys" value={metrics?.expiredKeys?.toString() || "0"} detail="-" trend="up" />
+            <MetricCard icon={<Database size={23} />} sparkline label="Total Keys" value={metrics?.totalKeys?.toString() || "0"} detail="-" trend="up" />
           </div>
 
           <div className="dashboard-grid">
@@ -208,7 +248,7 @@ export function App() {
                 </div>
               </div>
               <div className="chart-surface">
-                <Sparkline variant="area" />
+                <Sparkline variant="area" data={telemetry.map((t: any) => t.opsPerSecond)} />
               </div>
             </Panel>
 
@@ -220,13 +260,13 @@ export function App() {
                 </select>
               </div>
               {[
-                ["String", "1,245,852", "50.2%"],
-                ["Hash", "532,180", "21.5%"],
-                ["List", "287,640", "11.6%"],
-                ["Set", "146,251", "5.9%"],
-                ["Sorted Set", "118,764", "4.8%"],
-                ["Stream", "82,393", "3.3%"],
-                ["JSON", "64,567", "2.6%"]
+                ["String", "0", "0%"],
+                ["Hash", "0", "0%"],
+                ["List", "0", "0%"],
+                ["Set", "0", "0%"],
+                ["Sorted Set", "0", "0%"],
+                ["Stream", "0", "0%"],
+                ["JSON", "0", "0%"]
               ].map(([type, count, pct]) => (
                 <div className="type-row" key={type}>
                   <span>{type}</span>
@@ -237,7 +277,7 @@ export function App() {
               ))}
               <div className="type-total">
                 <span>Total Keys</span>
-                <strong>2,477,647</strong>
+                <strong>{metrics?.totalKeys || 0}</strong>
               </div>
             </Panel>
           </div>
@@ -250,15 +290,23 @@ export function App() {
               </div>
               <CommandInput icon={<Search size={15} />} placeholder="Filter keys by pattern..." />
               <div className="key-list">
-                {keyRows.map((row) => (
-                  <button className={row.selected ? "key-row selected" : "key-row"} key={row.key} type="button">
-                    <span>{row.type === "namespace" ? "▸" : ""} {row.key}</span>
+                {keys.map((row) => (
+                  <button 
+                    className={selectedKey === row.key ? "key-row selected" : "key-row"} 
+                    key={row.key} 
+                    onClick={() => {
+                        setSelectedKey(row.key);
+                        fetchKeyData(activeProfileId!, row.key, row.type);
+                    }}
+                    type="button"
+                  >
+                    <span>{row.type === "none" ? "▸" : ""} {row.key}</span>
                     <em>{row.type}</em>
-                    <strong>{row.count}</strong>
+                    <strong>{row.memoryBytes ? row.memoryBytes + " B" : ""}</strong>
                   </button>
                 ))}
               </div>
-              <div className="panel-footer">9 keys <RefreshCw size={13} /></div>
+              <div className="panel-footer">{keys.length} keys <RefreshCw size={13} onClick={() => fetchKeys(activeProfileId!)} style={{cursor: 'pointer'}} /></div>
             </Panel>
 
             <Panel className="value-panel">
@@ -266,42 +314,41 @@ export function App() {
                 <h2>Value Inspector</h2>
                 <div className="type-tabs">
                   {["String", "Hash", "List", "Set", "ZSet", "Stream", "JSON"].map((tab) => (
-                    <button className={tab === "Hash" ? "active" : ""} key={tab} type="button">{tab}</button>
+                    <button className={keys.find(k => k.key === selectedKey)?.type?.toLowerCase() === tab.toLowerCase() ? "active" : ""} key={tab} type="button">{tab}</button>
                   ))}
                 </div>
                 <div className="header-actions">
-                  <span>TTL: <strong>-1</strong></span>
+                  <span>TTL: <strong>{keys.find(k => k.key === selectedKey)?.ttlSeconds ?? -1}</strong></span>
                   <Copy size={15} />
                   <Trash2 size={15} />
                 </div>
               </div>
               <div className="metadata-grid">
-                <span>Key<strong>hash:user:1001</strong></span>
-                <span>Type<strong>Hash</strong></span>
-                <span>Size<strong>6 fields</strong></span>
-                <span>Encoding<strong>ziplist</strong></span>
-                <span>Last Access<strong>2s ago</strong></span>
+                <span>Key<strong>{selectedKey || "-"}</strong></span>
+                <span>Type<strong>{keys.find(k => k.key === selectedKey)?.type || "-"}</strong></span>
+                <span>Size<strong>{keys.find(k => k.key === selectedKey)?.memoryBytes || 0} B</strong></span>
+                <span>Encoding<strong>-</strong></span>
               </div>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Field</th>
-                    <th>Type</th>
-                    <th>Value</th>
-                    <th>Size</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {hashFields.map(([field, type, value, size]) => (
-                    <tr key={field}>
-                      <td>{field}</td>
-                      <td>{type}</td>
-                      <td>{value}</td>
-                      <td>{size}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {keys.find(k => k.key === selectedKey)?.type === "hash" && (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.isArray(selectedKeyData) ? selectedKeyData.map(([field, value]) => (
+                        <tr key={field}>
+                          <td>{field}</td>
+                          <td>string</td>
+                          <td>{value}</td>
+                        </tr>
+                      )) : null}
+                    </tbody>
+                  </table>
+              )}
             </Panel>
 
             <Panel className="raw-panel">
@@ -309,19 +356,11 @@ export function App() {
                 <button className="active" type="button">Raw</button>
                 <button type="button">JSON</button>
               </div>
-              <pre>{`1) "id"
-2) "1001"
-3) "email"
-4) "alice@example.com"
-5) "name"
-6) "Alice Johnson"
-7) "plan"
-8) "pro"
-9) "created_at"
-10) "2024-05-20T10:15:30Z"
-11) "last_login"
-12) "2024-05-24T11:18:05Z"`}</pre>
-              <div className="panel-footer">Size: 148 B <Button icon={<Copy size={14} />}>Copy</Button></div>
+              <pre>{
+                  keys.find(k => k.key === selectedKey)?.type === "string" ? selectedKeyData :
+                  keys.find(k => k.key === selectedKey)?.type === "hash" && Array.isArray(selectedKeyData) ? selectedKeyData.map((e: any, i: number) => `${i+1}) "${e[0]}"\n${i+2}) "${e[1]}"`).join("\n") : ""
+              }</pre>
+              <div className="panel-footer"> <Button icon={<Copy size={14} />}>Copy</Button></div>
             </Panel>
           </div>
 
@@ -331,15 +370,23 @@ export function App() {
                 <h2>BullMQ Queues</h2>
                 <Button ariaLabel="Add queue" icon={<Plus size={15} />} />
               </div>
-              {queues.map(([name, description, rate, failure, active]) => (
-                <button className={active ? "queue-row active" : "queue-row"} key={name} type="button">
-                  <span><strong>{name}</strong><small>{description}</small></span>
-                  <em>{rate}</em>
-                  <em>{failure}</em>
+              {queues.map((q) => (
+                <button 
+                  className={selectedQueue === q.name ? "queue-row active" : "queue-row"} 
+                  key={q.name} 
+                  type="button"
+                  onClick={() => {
+                      setSelectedQueue(q.name);
+                      fetchJobs(activeProfileId!, q.name, q.prefix);
+                  }}
+                >
+                  <span><strong>{q.name}</strong><small>{q.prefix}</small></span>
+                  <em>{q.active + q.waiting}</em>
+                  <em>{q.failed}</em>
                   <Sparkline compact />
                 </button>
               ))}
-              <div className="panel-footer">4 queues <a href="/">View all queues -&gt;</a></div>
+              <div className="panel-footer">{queues.length} queues <a href="/">View all queues -&gt;</a></div>
             </Panel>
 
             <div className="jobs-region">
@@ -373,16 +420,16 @@ export function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {jobs.map(([id, name, queue, status, attempts, duration, created, finished]) => (
-                      <tr key={id}>
-                        <td>{id}</td>
-                        <td>{name}</td>
-                        <td>{queue}</td>
-                        <td><Badge tone={statusTone(status)}>{status}</Badge></td>
-                        <td>{attempts}</td>
-                        <td>{duration}</td>
-                        <td>{created}</td>
-                        <td>{finished}</td>
+                    {jobs.map((job) => (
+                      <tr key={job.id}>
+                        <td>{job.id}</td>
+                        <td>{job.name}</td>
+                        <td>{job.queueName}</td>
+                        <td><Badge tone={statusTone(job.status)}>{job.status}</Badge></td>
+                        <td>{job.attemptsMade}</td>
+                        <td>{job.durationMs ? `${job.durationMs}ms` : "-"}</td>
+                        <td>{job.createdAt ? new Date(job.createdAt).toLocaleString() : "-"}</td>
+                        <td>{job.finishedAt ? new Date(job.finishedAt).toLocaleString() : "-"}</td>
                       </tr>
                     ))}
                   </tbody>
