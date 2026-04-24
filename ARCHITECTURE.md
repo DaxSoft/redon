@@ -159,8 +159,6 @@ redon/
 │  └─ generators/
 │
 ├─ docs/
-│  ├─ DESIGN.md
-│  ├─ ARCHITECTURE.md
 │  ├─ REDIS_COMMANDS.md
 │  ├─ PLUGINS.md
 │  └─ SECURITY.md

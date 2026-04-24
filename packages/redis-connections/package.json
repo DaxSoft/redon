@@ -1,0 +1,22 @@
+{
+  "name": "@redon/redis-connections",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@redon/errors": "workspace:*",
+    "@redon/ipc-contracts": "workspace:*",
+    "@redon/local-db": "workspace:*",
+    "@redon/logger": "workspace:*",
+    "@redon/redis-core": "workspace:*"
+  }
+}

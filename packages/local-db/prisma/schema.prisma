@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("REDON_DATABASE_URL")
+}
+
+model ConnectionProfile {
+  id            String   @id
+  name          String
+  host          String
+  port          Int
+  username      String?
+  database      Int      @default(0)
+  tlsEnabled    Boolean  @default(false)
+  credentialRef String?
+  color         String?
+  tags          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AppPreference {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model RecentKey {
+  id           String   @id
+  connectionId String
+  database     Int
+  keyName      String
+  keyType      String?
+  openedAt     DateTime @default(now())
+}
+
+model SavedFilter {
+  id           String   @id
+  connectionId String?
+  module       String
+  name         String
+  pattern      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ModuleSetting {
+  id        String   @id
+  moduleId  String
+  key       String
+  value     String
+  updatedAt DateTime @updatedAt
+}

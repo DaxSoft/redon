@@ -1,0 +1,8 @@
+node_modules
+.turbo
+.env
+dist
+apps/*/dist
+apps/*/src-tauri/target
+dev-server.log
+dev-server.err.log

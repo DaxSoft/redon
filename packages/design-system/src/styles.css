@@ -1,0 +1,47 @@
+:root {
+  --color-accent: #1eff5a;
+  --color-background: #040805;
+  --color-foreground: #b8ffca;
+  --color-surface-0: #040805;
+  --color-surface-1: #07120a;
+  --color-surface-2: #0a1a0f;
+  --color-surface-3: #0d2414;
+  --color-border-subtle: rgba(30, 255, 90, 0.16);
+  --color-border-default: rgba(30, 255, 90, 0.28);
+  --color-border-strong: rgba(30, 255, 90, 0.48);
+  --color-text-primary: #b8ffca;
+  --color-text-secondary: rgba(184, 255, 202, 0.72);
+  --color-text-muted: rgba(184, 255, 202, 0.48);
+  --color-text-disabled: rgba(184, 255, 202, 0.28);
+  --color-success: #1eff5a;
+  --color-warning: #ffe66d;
+  --color-danger: #ff5f57;
+  --color-info: #65d6ff;
+  --color-purple: #b47cff;
+  --color-glow-accent: rgba(30, 255, 90, 0.28);
+  --color-glow-danger: rgba(255, 95, 87, 0.24);
+  --font-ui: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-ui);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
