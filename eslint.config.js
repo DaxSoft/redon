@@ -5,7 +5,7 @@ import tsParser from "@typescript-eslint/parser";
 export default [
   eslint.configs.recommended,
   {
-    ignores: ["**/dist/**", "**/node_modules/**", "**/src-tauri/target/**"]
+    ignores: ["**/dist/**", "**/generated/**", "**/node_modules/**", "**/src-tauri/target/**"]
   },
   {
     files: ["**/*.{ts,tsx}"],
