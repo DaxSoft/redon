@@ -55,7 +55,8 @@ export const ModelName = {
   AppPreference: 'AppPreference',
   RecentKey: 'RecentKey',
   SavedFilter: 'SavedFilter',
-  ModuleSetting: 'ModuleSetting'
+  ModuleSetting: 'ModuleSetting',
+  MetricTelemetry: 'MetricTelemetry'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -132,6 +133,20 @@ export const ModuleSettingScalarFieldEnum = {
 } as const
 
 export type ModuleSettingScalarFieldEnum = (typeof ModuleSettingScalarFieldEnum)[keyof typeof ModuleSettingScalarFieldEnum]
+
+
+export const MetricTelemetryScalarFieldEnum = {
+  id: 'id',
+  connectionId: 'connectionId',
+  queueName: 'queueName',
+  timestampIso: 'timestampIso',
+  opsPerSecond: 'opsPerSecond',
+  usedMemoryBytes: 'usedMemoryBytes',
+  connectedClients: 'connectedClients',
+  hitRate: 'hitRate'
+} as const
+
+export type MetricTelemetryScalarFieldEnum = (typeof MetricTelemetryScalarFieldEnum)[keyof typeof MetricTelemetryScalarFieldEnum]
 
 
 export const SortOrder = {

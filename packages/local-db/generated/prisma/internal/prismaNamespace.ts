@@ -388,7 +388,8 @@ export const ModelName = {
   AppPreference: 'AppPreference',
   RecentKey: 'RecentKey',
   SavedFilter: 'SavedFilter',
-  ModuleSetting: 'ModuleSetting'
+  ModuleSetting: 'ModuleSetting',
+  MetricTelemetry: 'MetricTelemetry'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -404,7 +405,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "connectionProfile" | "appPreference" | "recentKey" | "savedFilter" | "moduleSetting"
+    modelProps: "connectionProfile" | "appPreference" | "recentKey" | "savedFilter" | "moduleSetting" | "metricTelemetry"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -778,6 +779,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    MetricTelemetry: {
+      payload: Prisma.$MetricTelemetryPayload<ExtArgs>
+      fields: Prisma.MetricTelemetryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MetricTelemetryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetricTelemetryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MetricTelemetryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetricTelemetryPayload>
+        }
+        findFirst: {
+          args: Prisma.MetricTelemetryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetricTelemetryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MetricTelemetryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetricTelemetryPayload>
+        }
+        findMany: {
+          args: Prisma.MetricTelemetryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetricTelemetryPayload>[]
+        }
+        create: {
+          args: Prisma.MetricTelemetryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetricTelemetryPayload>
+        }
+        createMany: {
+          args: Prisma.MetricTelemetryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MetricTelemetryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetricTelemetryPayload>[]
+        }
+        delete: {
+          args: Prisma.MetricTelemetryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetricTelemetryPayload>
+        }
+        update: {
+          args: Prisma.MetricTelemetryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetricTelemetryPayload>
+        }
+        deleteMany: {
+          args: Prisma.MetricTelemetryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MetricTelemetryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MetricTelemetryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetricTelemetryPayload>[]
+        }
+        upsert: {
+          args: Prisma.MetricTelemetryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetricTelemetryPayload>
+        }
+        aggregate: {
+          args: Prisma.MetricTelemetryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMetricTelemetry>
+        }
+        groupBy: {
+          args: Prisma.MetricTelemetryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MetricTelemetryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MetricTelemetryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MetricTelemetryCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -875,6 +950,20 @@ export const ModuleSettingScalarFieldEnum = {
 } as const
 
 export type ModuleSettingScalarFieldEnum = (typeof ModuleSettingScalarFieldEnum)[keyof typeof ModuleSettingScalarFieldEnum]
+
+
+export const MetricTelemetryScalarFieldEnum = {
+  id: 'id',
+  connectionId: 'connectionId',
+  queueName: 'queueName',
+  timestampIso: 'timestampIso',
+  opsPerSecond: 'opsPerSecond',
+  usedMemoryBytes: 'usedMemoryBytes',
+  connectedClients: 'connectedClients',
+  hitRate: 'hitRate'
+} as const
+
+export type MetricTelemetryScalarFieldEnum = (typeof MetricTelemetryScalarFieldEnum)[keyof typeof MetricTelemetryScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1048,6 +1137,7 @@ export type GlobalOmitConfig = {
   recentKey?: Prisma.RecentKeyOmit
   savedFilter?: Prisma.SavedFilterOmit
   moduleSetting?: Prisma.ModuleSettingOmit
+  metricTelemetry?: Prisma.MetricTelemetryOmit
 }
 
 /* Types for Logging */

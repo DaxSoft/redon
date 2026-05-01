@@ -13,6 +13,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@redon/plugin-contracts": "workspace:*"
+    "@redon/plugin-contracts": "workspace:*",
+    "ioredis": "^5.8.2"
   }
 }
