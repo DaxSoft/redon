@@ -47,13 +47,16 @@ export const listProfilesCommand: IpcCommandDefinition<undefined, readonly z.inf
 
 export const testConnectionCommand = {
   name: "connection.test",
-  requestSchema: connectionProfileSchema,
+  requestSchema: z.object({
+    profile: connectionProfileSchema,
+    password: z.string().nullable()
+  }),
   responseSchema: z.object({
     ok: z.boolean(),
     latencyMs: z.number().nullable(),
     message: z.string()
   })
-} satisfies IpcCommandDefinition<z.infer<typeof connectionProfileSchema>, { readonly ok: boolean; readonly latencyMs: number | null; readonly message: string }>;
+} satisfies IpcCommandDefinition<{ readonly profile: z.infer<typeof connectionProfileSchema>; readonly password: string | null }, { readonly ok: boolean; readonly latencyMs: number | null; readonly message: string }>;
 
 export const scanKeysCommand = {
   name: "redis.scanKeys",
@@ -112,7 +115,8 @@ export const getMetricsCommand = {
 export const openConnectionCommand = {
   name: "connection.open",
   requestSchema: z.object({
-    connectionId: z.string()
+    connectionId: z.string(),
+    password: z.string().nullable()
   }),
   responseSchema: z.object({
     success: z.boolean(),

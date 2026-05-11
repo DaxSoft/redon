@@ -102,6 +102,7 @@ export function App() {
     port: "6379",
     database: "0",
     username: "",
+    password: "",
     tlsEnabled: false,
     tlsAllowSelfSigned: false
   });
@@ -137,6 +138,7 @@ export function App() {
         port: parsedPort,
         database: db,
         username: parsed.username || "",
+        password: parsed.password ? decodeURIComponent(parsed.password) : "",
         tlsEnabled: parsed.protocol === "rediss:",
         tlsAllowSelfSigned: state.tlsAllowSelfSigned,
         name: state.name.trim().length > 0 ? state.name : `${parsedHost}:${parsedPort}`
@@ -191,7 +193,7 @@ export function App() {
 
       const created = await invokeIpc(createProfileCommand, payload);
       await fetchProfiles();
-      await openConnection(created.id);
+      await openConnection(created.id, connectionForm.password.trim() || null);
       setView("overview");
       setConnectionStatus(`Saved and connected to ${created.host}:${created.port}/${created.database}.`);
     } catch (error) {
@@ -208,17 +210,20 @@ export function App() {
 
     try {
       const result = await invokeIpc(testConnectionCommand, {
-        id: crypto.randomUUID(),
-        name: connectionForm.name.trim() || "Test Connection",
-        host: connectionForm.host.trim(),
-        port: Number(connectionForm.port),
-        username: connectionForm.username.trim() || null,
-        database: Number(connectionForm.database),
-        tlsEnabled: connectionForm.tlsEnabled,
-        tlsAllowSelfSigned: connectionForm.tlsAllowSelfSigned,
-        credentialRef: null,
-        color: null,
-        tags: []
+        profile: {
+          id: crypto.randomUUID(),
+          name: connectionForm.name.trim() || "Test Connection",
+          host: connectionForm.host.trim(),
+          port: Number(connectionForm.port),
+          username: connectionForm.username.trim() || null,
+          database: Number(connectionForm.database),
+          tlsEnabled: connectionForm.tlsEnabled,
+          tlsAllowSelfSigned: connectionForm.tlsAllowSelfSigned,
+          credentialRef: null,
+          color: null,
+          tags: []
+        },
+        password: connectionForm.password.trim() || null
       });
 
       if (!result.ok) {
@@ -270,6 +275,10 @@ export function App() {
             <label>
               Username
               <input value={connectionForm.username} onChange={(event) => setConnectionForm((state) => ({ ...state, username: event.target.value }))} />
+            </label>
+            <label>
+              Password
+              <input type="password" value={connectionForm.password} onChange={(event) => setConnectionForm((state) => ({ ...state, password: event.target.value }))} />
             </label>
             <label className="connection-checkbox">
               <input type="checkbox" checked={connectionForm.tlsEnabled} onChange={(event) => setConnectionForm((state) => ({ ...state, tlsEnabled: event.target.checked }))} />

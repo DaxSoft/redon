@@ -109,7 +109,7 @@ app.post("/ipc/connection.createProfile", async (req, res) => {
 app.post("/ipc/connection.test", async (req, res) => {
   try {
     const parsed = testConnectionCommand.requestSchema.parse(req.body);
-    const result = await testConnection({ profile: parsed, password: null });
+    const result = await testConnection({ profile: parsed.profile, password: parsed.password ?? null });
     res.json({ success: true, data: result });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
@@ -128,7 +128,7 @@ app.post("/ipc/connection.open", async (req, res) => {
 
     const runtimeClient = createRuntimeClient({
         profile: { ...profile, tlsAllowSelfSigned: profile.tlsAllowSelfSigned ?? false, tags: profile.tags ? JSON.parse(profile.tags) : [] },
-        password: null 
+        password: parsed.password ?? null 
     });
     
     await runtimeClient.client.connect();

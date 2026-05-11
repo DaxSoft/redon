@@ -36,9 +36,9 @@ export function useRedis() {
     }
   };
 
-  const openConnection = async (id: string) => {
+  const openConnection = async (id: string, password?: string | null) => {
     try {
-      await invokeIpc(openConnectionCommand, { connectionId: id });
+      await invokeIpc(openConnectionCommand, { connectionId: id, password: password ?? null });
       setActiveProfileId(id);
       fetchMetrics(id);
       fetchKeys(id);
