@@ -7,9 +7,10 @@ interface TopbarProps {
   readonly onSelectConnection: (id: string) => void;
   readonly onSetConnectionError: () => void;
   readonly onNewConnection: () => void;
+  readonly onRefresh: () => void;
 }
 
-export function Topbar({ profiles, activeProfileId, onSelectConnection, onSetConnectionError, onNewConnection }: TopbarProps) {
+export function Topbar({ profiles, activeProfileId, onSelectConnection, onSetConnectionError, onNewConnection, onRefresh }: TopbarProps) {
   const selectProps = activeProfileId ? { value: activeProfileId } : {};
 
   return (
@@ -40,7 +41,7 @@ export function Topbar({ profiles, activeProfileId, onSelectConnection, onSetCon
         Latency: <strong>0.00 ms</strong>
       </div>
       <CommandInput icon={<Command size={15} />} placeholder="Quick command or search... Ctrl K" />
-      <Button icon={<RefreshCw size={16} />} ariaLabel="Refresh">
+      <Button icon={<RefreshCw size={16} />} ariaLabel="Refresh" onClick={onRefresh}>
         Refresh
       </Button>
       <Button icon={<Plus size={16} />} onClick={onNewConnection}>

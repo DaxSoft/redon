@@ -183,6 +183,23 @@ export function useAppController() {
     }
   };
 
+  const handleRefresh = async () => {
+    if (!redis.activeProfileId) return;
+    const connectionId = redis.activeProfileId;
+    await Promise.all([
+      redis.fetchMetrics(connectionId),
+      redis.fetchKeys(connectionId),
+      redis.fetchQueues(connectionId),
+      redis.fetchTelemetry(connectionId)
+    ]);
+    if (redis.selectedQueue) {
+      const queue = redis.queues.find((item) => item.name === redis.selectedQueue);
+      if (queue) {
+        await redis.fetchJobs(connectionId, queue.name, queue.prefix);
+      }
+    }
+  };
+
   return {
     redis,
     view,
@@ -200,6 +217,7 @@ export function useAppController() {
     applyRedisUrl,
     tryOpenSavedConnection,
     handleCreateConnection,
-    handleTestConnection
+    handleTestConnection,
+    handleRefresh
   };
 }

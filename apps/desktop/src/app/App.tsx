@@ -21,6 +21,11 @@ export function App() {
             });
           }}
           onNewConnection={() => app.setView("connections")}
+          onRefresh={() => {
+            app.handleRefresh().catch((error) => {
+              app.setConnectionError(error instanceof Error ? error.message : "Could not refresh data.");
+            });
+          }}
         />
 
         {app.redis.activeProfileId ? (
