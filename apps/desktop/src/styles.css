@@ -23,29 +23,14 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 10px 18px;
+  justify-content: center;
+  padding: 10px 10px 18px;
 }
 
 .brand img {
-  width: 36px;
-  height: 36px;
-}
-
-.brand strong,
-.brand span {
-  display: block;
-}
-
-.brand strong {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.brand span {
-  margin-top: 4px;
-  color: var(--color-text-muted);
-  font-size: 11px;
+  width: 170px;
+  max-width: 100%;
+  height: auto;
 }
 
 .nav-list {
@@ -87,7 +72,7 @@
 .topbar {
   display: grid;
   grid-template-columns: 250px max-content 130px minmax(260px, 460px) max-content max-content;
-  align-items: end;
+  align-items: center;
   gap: 14px;
   min-height: 74px;
   padding: 12px 20px 10px;
@@ -105,8 +90,6 @@
   font-size: 11px;
 }
 
-.connection-select button,
-select,
 .ui-button,
 .command-input {
   min-height: 34px;
@@ -116,7 +99,6 @@ select,
   border-radius: 6px;
 }
 
-.connection-select button,
 .ui-button {
   display: inline-flex;
   align-items: center;
@@ -128,9 +110,38 @@ select,
 
 .ui-button:focus-visible,
 .command-input:focus-within,
-select:focus-visible {
+.ui-select:focus-within {
   outline: 1px solid var(--color-accent);
   box-shadow: 0 0 0 3px rgba(30, 255, 90, 0.16);
+}
+.ui-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  min-height: 34px;
+  color: var(--color-text-primary);
+  background: rgba(4, 8, 5, 0.64);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
+}
+
+.ui-select select {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 32px 0 10px;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  appearance: none;
+}
+
+.ui-select svg {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: var(--color-text-muted);
 }
 
 .latency {
@@ -422,7 +433,7 @@ select:focus-visible {
 }
 
 .chart-surface {
-  height: 130px;
+  height: 176px;
   margin: 2px 12px 12px;
   background-image:
     linear-gradient(rgba(30, 255, 90, 0.09) 1px, transparent 1px),

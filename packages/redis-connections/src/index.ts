@@ -22,7 +22,6 @@ export async function testConnection(input: OpenConnectionInput): Promise<{ read
   const start = performance.now();
 
   try {
-    await runtime.client.connect();
     await runtime.client.ping();
     return {
       ok: true,

@@ -27,7 +27,7 @@ export function createRedisClient(connectionId: string, options: RedisConnection
   const client = new Redis({
     host: options.host,
     port: options.port,
-    username: options.username ?? "default",
+    username: options.username ?? undefined,
     password: options.password ?? undefined,
     db: options.database,
     tls: options.tlsEnabled ? { rejectUnauthorized: !options.tlsAllowSelfSigned } : undefined,

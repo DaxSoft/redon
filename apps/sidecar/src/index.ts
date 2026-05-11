@@ -131,7 +131,7 @@ app.post("/ipc/connection.open", async (req, res) => {
         password: parsed.password ?? null 
     });
     
-    await runtimeClient.client.connect();
+    await runtimeClient.client.ping();
     activeClients.set(parsed.connectionId, runtimeClient);
 
     res.json({ success: true, data: { success: true } });

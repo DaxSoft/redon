@@ -30,12 +30,19 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import ReactECharts from "echarts-for-react";
+import type { EChartsOption } from "echarts";
 import { useRedis } from "../hooks/useRedis";
 import { invokeIpc } from "../ipc-client";
 import { createProfileCommand, testConnectionCommand } from "@redon/ipc-contracts";
-import { Badge, Button, CommandInput, MetricCard, Panel, Sparkline, StatusDot } from "@redon/ui";
+import { Badge, Button, CommandInput, MetricCard, Panel, Select, Sparkline, StatusDot } from "@redon/ui";
 
 type NavView = "overview" | "connections";
+type RangeKey = "1m" | "5m" | "15m" | "1h" | "6h" | "24h";
+const ACTIVE_CONNECTION_STORAGE_KEY = "redon.activeConnectionId";
+const CONNECTION_PASSWORD_STORAGE_KEY = "redon.connectionPasswords";
+const TIME_RANGES: readonly RangeKey[] = ["1m", "5m", "15m", "1h", "6h", "24h"];
+const RANGE_TO_MINUTES: Record<RangeKey, number> = { "1m": 1, "5m": 5, "15m": 15, "1h": 60, "6h": 360, "24h": 1440 };
 
 const navItems: ReadonlyArray<{ label: string; view?: NavView; icon: LucideIcon }> = [
   { label: "Overview", view: "overview", icon: Grid2X2 },
@@ -74,6 +81,7 @@ function statusTone(status: string): "success" | "info" | "warning" | "danger" {
 export function App() {
   const {
     profiles,
+    isProfilesLoaded,
     fetchProfiles,
     activeProfileId,
     openConnection,
@@ -110,6 +118,7 @@ export function App() {
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [isSavingConnection, setIsSavingConnection] = useState(false);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [selectedRange, setSelectedRange] = useState<RangeKey>("5m");
 
   const applyRedisUrl = (rawUrl: string) => {
     const trimmed = rawUrl.trim();
@@ -150,10 +159,26 @@ export function App() {
   };
 
   useEffect(() => {
-    if (profiles.length === 0) {
+    if (isProfilesLoaded && profiles.length === 0) {
       setView("connections");
     }
-  }, [profiles.length]);
+  }, [isProfilesLoaded, profiles.length]);
+
+  useEffect(() => {
+    if (!isProfilesLoaded || activeProfileId !== null || profiles.length === 0) return;
+    const savedConnectionId = localStorage.getItem(ACTIVE_CONNECTION_STORAGE_KEY);
+    if (!savedConnectionId) return;
+    if (!profiles.some((profile) => profile.id === savedConnectionId)) return;
+    tryOpenSavedConnection(savedConnectionId).catch((error) => {
+      setConnectionError(error instanceof Error ? error.message : "Could not open saved connection.");
+    });
+  }, [isProfilesLoaded, activeProfileId, profiles]);
+
+  useEffect(() => {
+    if (activeProfileId !== null) {
+      localStorage.setItem(ACTIVE_CONNECTION_STORAGE_KEY, activeProfileId);
+    }
+  }, [activeProfileId]);
 
   useEffect(() => {
     if (activeProfileId) {
@@ -167,6 +192,30 @@ export function App() {
   }, [activeProfileId, fetchMetrics, fetchQueues, fetchTelemetry]);
 
   const activeProfile = useMemo(() => profiles.find((profile) => profile.id === activeProfileId), [profiles, activeProfileId]);
+
+  const tryOpenSavedConnection = async (connectionId: string) => {
+    const passwordMap = JSON.parse(localStorage.getItem(CONNECTION_PASSWORD_STORAGE_KEY) ?? "{}") as Record<string, string>;
+    const savedPassword = passwordMap[connectionId] ?? null;
+
+    try {
+      await openConnection(connectionId, savedPassword);
+      return;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not open selected connection.";
+      if (!message.includes("WRONGPASS")) {
+        throw error;
+      }
+
+      const typedPassword = window.prompt("Password required for this Redis connection. Enter password:");
+      if (typedPassword === null) {
+        throw error;
+      }
+
+      passwordMap[connectionId] = typedPassword;
+      localStorage.setItem(CONNECTION_PASSWORD_STORAGE_KEY, JSON.stringify(passwordMap));
+      await openConnection(connectionId, typedPassword);
+    }
+  };
 
   const handleCreateConnection = async () => {
     setConnectionError(null);
@@ -192,6 +241,9 @@ export function App() {
       };
 
       const created = await invokeIpc(createProfileCommand, payload);
+      const passwordMap = JSON.parse(localStorage.getItem(CONNECTION_PASSWORD_STORAGE_KEY) ?? "{}") as Record<string, string>;
+      passwordMap[created.id] = connectionForm.password;
+      localStorage.setItem(CONNECTION_PASSWORD_STORAGE_KEY, JSON.stringify(passwordMap));
       await fetchProfiles();
       await openConnection(created.id, connectionForm.password.trim() || null);
       setView("overview");
@@ -319,7 +371,12 @@ export function App() {
                   className={activeProfileId === profile.id ? "saved-connection-row active" : "saved-connection-row"}
                   key={profile.id}
                   type="button"
-                  onClick={() => openConnection(profile.id)}
+                  onClick={() => {
+                    setConnectionError(null);
+                    tryOpenSavedConnection(profile.id).catch((error) => {
+                      setConnectionError(error instanceof Error ? error.message : "Could not open selected connection.");
+                    });
+                  }}
                 >
                   <span>
                     <strong>{profile.name}</strong>
@@ -352,6 +409,47 @@ export function App() {
       );
     }
     const connectionId = activeProfileId;
+    const rangeMinutes = RANGE_TO_MINUTES[selectedRange];
+    const now = Date.now();
+    const rangeStartMs = now - rangeMinutes * 60 * 1000;
+    const visibleTelemetry = telemetry.filter((point) => {
+      const ts = Date.parse(point.timestampIso);
+      return Number.isFinite(ts) && ts >= rangeStartMs;
+    });
+    const data = visibleTelemetry.length > 0 ? visibleTelemetry : telemetry;
+    const chartOption: EChartsOption = {
+      animation: true,
+      grid: { top: 12, right: 16, bottom: 22, left: 34 },
+      tooltip: { trigger: "axis", backgroundColor: "#041107", borderColor: "#0f8c4a", textStyle: { color: "#d7ffe7" } },
+      xAxis: {
+        type: "category",
+        boundaryGap: false,
+        data: data.map((point) => {
+          const date = new Date(point.timestampIso);
+          return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+        }),
+        axisLabel: { color: "#7cbf96", fontSize: 11 },
+        axisLine: { lineStyle: { color: "rgba(30,255,90,0.16)" } },
+        splitLine: { show: true, lineStyle: { color: "rgba(30,255,90,0.08)" } }
+      },
+      yAxis: {
+        type: "value",
+        axisLabel: { color: "#7cbf96", fontSize: 11 },
+        axisLine: { show: false },
+        splitLine: { lineStyle: { color: "rgba(30,255,90,0.08)" } }
+      },
+      series: [
+        {
+          name: "Ops/sec",
+          type: "line",
+          smooth: true,
+          symbol: "none",
+          data: data.map((point) => point.opsPerSecond ?? 0),
+          lineStyle: { width: 3, color: "#1eff5a" },
+          areaStyle: { color: "rgba(30,255,90,0.18)" }
+        }
+      ]
+    };
 
     return (
       <section className="workspace">
@@ -368,29 +466,28 @@ export function App() {
           <Panel className="activity-panel">
             <div className="panel-header">
               <h2>Redis Activity</h2>
-              <select aria-label="Activity metric">
+              <Select ariaLabel="Activity metric">
                 <option>Ops/sec</option>
-              </select>
+              </Select>
               <div className="range-tabs">
-                <button type="button">1m</button>
-                <button className="active" type="button">5m</button>
-                <button type="button">15m</button>
-                <button type="button">1h</button>
-                <button type="button">6h</button>
-                <button type="button">24h</button>
+                {TIME_RANGES.map((range) => (
+                  <button className={selectedRange === range ? "active" : ""} key={range} onClick={() => setSelectedRange(range)} type="button">
+                    {range}
+                  </button>
+                ))}
               </div>
             </div>
             <div className="chart-surface">
-              <Sparkline variant="area" data={telemetry.map((point) => point.opsPerSecond)} />
+              <ReactECharts option={chartOption} notMerge style={{ width: "100%", height: "100%" }} />
             </div>
           </Panel>
 
           <Panel className="type-panel">
             <div className="panel-header">
               <h2>Key Types</h2>
-              <select aria-label="Key type sort">
+              <Select ariaLabel="Key type sort">
                 <option>By Count</option>
-              </select>
+              </Select>
             </div>
             {[
               ["String", "0", "0%"],
@@ -569,9 +666,9 @@ export function App() {
               <div className="panel-header">
                 <h2>Jobs</h2>
                 <CommandInput icon={<Search size={15} />} placeholder="Search jobs..." />
-                <select aria-label="Queue filter">
+                <Select ariaLabel="Queue filter">
                   <option>All Queues</option>
-                </select>
+                </Select>
                 <span className="auto-refresh">
                   Auto-refresh <StatusDot label="" tone="success" />
                 </span>
@@ -612,9 +709,9 @@ export function App() {
           <Panel className="queue-metrics-panel">
             <div className="panel-header">
               <h2>Queue Metrics</h2>
-              <select aria-label="Selected queue">
+              <Select ariaLabel="Selected queue">
                 <option>{selectedQueue || "Select queue"}</option>
-              </select>
+              </Select>
             </div>
             {queueMetricRows.map(({ label, value, Icon }) => (
               <div className="queue-metric" key={label}>
@@ -637,10 +734,6 @@ export function App() {
       <aside className="sidebar">
         <div className="brand">
           <img src="/logo.svg" alt="Redon" />
-          <div>
-            <strong>Redon</strong>
-            <span>v0.1.0</span>
-          </div>
         </div>
 
         <nav className="nav-list" aria-label="Primary">
@@ -679,10 +772,15 @@ export function App() {
         <header className="topbar">
           <div className="connection-select">
             <span>Connection</span>
-            <select
+            <Select
               value={activeProfileId || ""}
-              onChange={(event) => openConnection(event.target.value)}
-              style={{ padding: "0 10px" }}
+              onChange={(event) => {
+                setConnectionError(null);
+                const nextId = event.target.value;
+                tryOpenSavedConnection(nextId).catch((error) => {
+                  setConnectionError(error instanceof Error ? error.message : "Could not open selected connection.");
+                });
+              }}
             >
               <option value="" disabled>
                 Select Connection
@@ -692,7 +790,7 @@ export function App() {
                   {profile.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <Badge tone={activeProfileId ? "success" : "muted"}>{activeProfileId ? "Connected" : "Disconnected"}</Badge>
           <div className="latency">

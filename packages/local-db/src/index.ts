@@ -1,10 +1,30 @@
 import "dotenv/config";
 
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { PrismaClient, type PrismaClient as PrismaDbClient } from "../generated/prisma/client";
 
-const connectionString = `${process.env["DATABASE_URL"]}`;
+function resolveDatabaseUrl(rawValue: string | undefined): string {
+  const fallback = "file:./redon.db";
+  const value = rawValue ?? fallback;
+  if (!value.startsWith("file:")) {
+    return value;
+  }
+
+  const sqlitePath = value.slice("file:".length);
+  if (sqlitePath.startsWith("/") || /^[A-Za-z]:[\\/]/.test(sqlitePath)) {
+    return value;
+  }
+
+  const modulePath = fileURLToPath(import.meta.url);
+  const packageRoot = path.resolve(path.dirname(modulePath), "..");
+  const absolutePath = path.resolve(packageRoot, sqlitePath);
+  return `file:${absolutePath.replace(/\\/g, "/")}`;
+}
+
+const connectionString = resolveDatabaseUrl(process.env["DATABASE_URL"]);
 
 const adapter = new PrismaBetterSqlite3({ url: connectionString });
 const prisma = new PrismaClient({ adapter });

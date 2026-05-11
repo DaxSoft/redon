@@ -16,6 +16,7 @@ import {
 
 export function useRedis() {
   const [profiles, setProfiles] = useState<readonly ConnectionProfile[]>([]);
+  const [isProfilesLoaded, setIsProfilesLoaded] = useState(false);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<any>(null);
   const [keys, setKeys] = useState<RedisKeySummary[]>([]);
@@ -28,25 +29,18 @@ export function useRedis() {
   const [telemetry, setTelemetry] = useState<any[]>([]);
 
   const fetchProfiles = async () => {
-    try {
-      const p = await invokeIpc(listProfilesCommand, undefined);
-      setProfiles(p);
-    } catch (err) {
-      console.error(err);
-    }
+    const p = await invokeIpc(listProfilesCommand, undefined);
+    setProfiles(p);
+    setIsProfilesLoaded(true);
   };
 
   const openConnection = async (id: string, password?: string | null) => {
-    try {
-      await invokeIpc(openConnectionCommand, { connectionId: id, password: password ?? null });
-      setActiveProfileId(id);
-      fetchMetrics(id);
-      fetchKeys(id);
-      fetchQueues(id);
-      fetchTelemetry(id);
-    } catch (err) {
-      console.error(err);
-    }
+    await invokeIpc(openConnectionCommand, { connectionId: id, password: password ?? null });
+    setActiveProfileId(id);
+    fetchMetrics(id);
+    fetchKeys(id);
+    fetchQueues(id);
+    fetchTelemetry(id);
   };
 
   const fetchMetrics = async (id: string) => {
@@ -120,6 +114,7 @@ export function useRedis() {
 
   return {
     profiles,
+    isProfilesLoaded,
     fetchProfiles,
     activeProfileId,
     openConnection,

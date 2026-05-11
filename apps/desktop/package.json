@@ -24,6 +24,8 @@
     "@redon/shell": "workspace:*",
     "@redon/ui": "workspace:*",
     "@tauri-apps/api": "^2.0.0",
+    "echarts": "^6.0.0",
+    "echarts-for-react": "^3.0.6",
     "lucide-react": "^0.468.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",

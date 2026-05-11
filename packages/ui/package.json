@@ -13,6 +13,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "lucide-react": "^0.468.0",
     "react": "^18.3.0"
   }
 }
