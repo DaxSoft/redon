@@ -104,6 +104,7 @@ export function useAppController() {
 
     try {
       await redis.openConnection(connectionId, savedPassword);
+      await refreshConnectionData(connectionId);
       return;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Could not open selected connection.";
@@ -113,7 +114,25 @@ export function useAppController() {
       passwordMap[connectionId] = typedPassword;
       localStorage.setItem(CONNECTION_PASSWORD_STORAGE_KEY, JSON.stringify(passwordMap));
       await redis.openConnection(connectionId, typedPassword);
+      await refreshConnectionData(connectionId);
     }
+  };
+
+  const refreshConnectionData = async (connectionId: string) => {
+    const [nextQueues] = await Promise.all([
+      redis.fetchQueues(connectionId),
+      redis.fetchMetrics(connectionId),
+      redis.fetchKeys(connectionId),
+      redis.fetchTelemetry(connectionId)
+    ]);
+
+    const queues = nextQueues ?? [];
+    const selectedQueueName = redis.selectedQueue ?? queues[0]?.name ?? null;
+    if (!selectedQueueName) return;
+    const queue = queues.find((item) => item.name === selectedQueueName);
+    if (!queue) return;
+    redis.setSelectedQueue(queue.name);
+    await redis.fetchJobs(connectionId, queue.name, queue.prefix);
   };
 
   const handleCreateConnection = async () => {
@@ -140,6 +159,7 @@ export function useAppController() {
       localStorage.setItem(CONNECTION_PASSWORD_STORAGE_KEY, JSON.stringify(passwordMap));
       await redis.fetchProfiles();
       await redis.openConnection(created.id, connectionForm.password.trim() || null);
+      await refreshConnectionData(created.id);
       setView("overview");
       setConnectionStatus(`Saved and connected to ${created.host}:${created.port}/${created.database}.`);
     } catch (error) {
@@ -185,19 +205,7 @@ export function useAppController() {
 
   const handleRefresh = async () => {
     if (!redis.activeProfileId) return;
-    const connectionId = redis.activeProfileId;
-    await Promise.all([
-      redis.fetchMetrics(connectionId),
-      redis.fetchKeys(connectionId),
-      redis.fetchQueues(connectionId),
-      redis.fetchTelemetry(connectionId)
-    ]);
-    if (redis.selectedQueue) {
-      const queue = redis.queues.find((item) => item.name === redis.selectedQueue);
-      if (queue) {
-        await redis.fetchJobs(connectionId, queue.name, queue.prefix);
-      }
-    }
+    await refreshConnectionData(redis.activeProfileId);
   };
 
   return {

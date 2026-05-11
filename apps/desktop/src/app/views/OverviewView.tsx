@@ -44,13 +44,6 @@ function statusTone(status: string): "success" | "info" | "warning" | "danger" {
   return "success";
 }
 
-const queueMetricRows = [
-  { label: "Throughput", value: "128 jobs/min", Icon: Activity },
-  { label: "Retry Rate", value: "2.1%", Icon: Zap },
-  { label: "Failure Rate", value: "0.9%", Icon: ShieldCheck },
-  { label: "Active Workers", value: "5", Icon: Gauge },
-] as const;
-
 interface OverviewViewProps {
   readonly activeProfileId: string | null;
   readonly setViewConnections: () => void;
@@ -68,7 +61,7 @@ interface OverviewViewProps {
   readonly selectedQueue: string | null;
   readonly setSelectedQueue: (name: string | null) => void;
   readonly jobs: any[];
-  readonly fetchJobs: (id: string, queueName: string, prefix: string) => void;
+  readonly fetchJobs: (id: string, queueName: string, prefix: string) => Promise<readonly any[]>;
 }
 
 export function OverviewView(props: OverviewViewProps) {
@@ -144,6 +137,30 @@ export function OverviewView(props: OverviewViewProps) {
   const selectedKeyEntry = props.keys.find(
     (key) => key.key === props.selectedKey,
   );
+  const selectedQueueEntry = props.queues.find((queue) => queue.name === props.selectedQueue) ?? null;
+  const activeJobs = props.jobs.filter((job) => job.status === "active").length;
+  const failedJobs = props.jobs.filter((job) => job.status === "failed").length;
+  const retryingJobs = props.jobs.filter((job) => job.attemptsMade > 0).length;
+  const activeWorkers = new Set(
+    props.jobs.map((job) => (typeof job.processedBy === "string" ? job.processedBy : null)).filter(Boolean),
+  ).size;
+  const queueThroughput =
+    props.telemetry.length > 1
+      ? Math.round(
+          props.telemetry
+            .slice(-12)
+            .reduce((sum, point) => sum + (point.opsPerSecond ?? 0), 0) / Math.max(1, Math.min(props.telemetry.length, 12)),
+        )
+      : 0;
+  const queueFailureRateBase = Math.max(1, (selectedQueueEntry?.completed ?? 0) + (selectedQueueEntry?.failed ?? 0));
+  const queueFailureRate = `${(((selectedQueueEntry?.failed ?? failedJobs) / queueFailureRateBase) * 100).toFixed(1)}%`;
+  const queueRetryRate = `${((retryingJobs / Math.max(1, props.jobs.length)) * 100).toFixed(1)}%`;
+  const computedQueueMetricRows = [
+    { label: "Throughput", value: `${queueThroughput} jobs/min`, Icon: Activity },
+    { label: "Retry Rate", value: queueRetryRate, Icon: Zap },
+    { label: "Failure Rate", value: queueFailureRate, Icon: ShieldCheck },
+    { label: "Active Workers", value: activeWorkers.toString(), Icon: Gauge },
+  ] as const;
   const rawValueText =
     selectedKeyEntry?.type === "string"
       ? (props.selectedKeyData ?? "")
@@ -531,7 +548,7 @@ export function OverviewView(props: OverviewViewProps) {
               type="button"
               onClick={() => {
                 props.setSelectedQueue(queue.name);
-                props.fetchJobs(connectionId, queue.name, queue.prefix);
+                props.fetchJobs(connectionId, queue.name, queue.prefix).catch(() => undefined);
               }}
             >
               <span>
@@ -651,7 +668,15 @@ export function OverviewView(props: OverviewViewProps) {
         <Panel className="queue-metrics-panel">
           <div className="panel-header">
             <h2>Queue Metrics</h2>
-            <Select {...queueSelectProps}>
+            <Select
+              {...queueSelectProps}
+              onValueChange={(queueName) => {
+                const queue = props.queues.find((item) => item.name === queueName);
+                if (!queue) return;
+                props.setSelectedQueue(queue.name);
+                props.fetchJobs(connectionId, queue.name, queue.prefix).catch(() => undefined);
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select queue" />
               </SelectTrigger>
@@ -664,13 +689,17 @@ export function OverviewView(props: OverviewViewProps) {
               </SelectContent>
             </Select>
           </div>
-          {queueMetricRows.map(({ label, value, Icon }) => (
+          {computedQueueMetricRows.map(({ label, value, Icon }) => (
             <div className="queue-metric" key={label}>
               <span>
                 <Icon size={15} /> {label}
               </span>
               <strong>{value}</strong>
-              <Sparkline compact danger={label === "Failure Rate"} />
+              <Sparkline
+                compact
+                danger={label === "Failure Rate"}
+                data={label === "Failure Rate" ? [failedJobs, selectedQueueEntry?.failed ?? failedJobs] : [activeJobs, selectedQueueEntry?.active ?? activeJobs]}
+              />
             </div>
           ))}
           <div className="panel-footer">Last 5 minutes</div>

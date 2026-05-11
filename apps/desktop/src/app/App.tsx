@@ -1,5 +1,6 @@
 import { ConnectionsView } from "./views/ConnectionsView";
 import { OverviewView } from "./views/OverviewView";
+import { QueuesView } from "./views/QueuesView";
 import { Sidebar } from "./components/Sidebar";
 import { Topbar } from "./components/Topbar";
 import { useAppController } from "./useAppController";
@@ -54,7 +55,7 @@ export function App() {
               });
             }}
           />
-        ) : (
+        ) : app.view === "overview" ? (
           <OverviewView
             activeProfileId={app.redis.activeProfileId}
             setViewConnections={() => app.setView("connections")}
@@ -73,6 +74,27 @@ export function App() {
             setSelectedQueue={app.redis.setSelectedQueue}
             jobs={app.redis.jobs}
             fetchJobs={app.redis.fetchJobs}
+          />
+        ) : (
+          <QueuesView
+            activeProfileId={app.redis.activeProfileId}
+            queues={app.redis.queues}
+            selectedQueue={app.redis.selectedQueue}
+            setSelectedQueue={app.redis.setSelectedQueue}
+            jobs={app.redis.jobs}
+            selectedJobId={app.redis.selectedJobId}
+            setSelectedJobId={app.redis.setSelectedJobId}
+            telemetry={app.redis.telemetry}
+            fetchJobs={app.redis.fetchJobs}
+            refreshAll={app.handleRefresh}
+            pauseQueue={app.redis.pauseQueue}
+            resumeQueue={app.redis.resumeQueue}
+            retryFailedJobs={app.redis.retryFailedJobs}
+            cleanCompletedJobs={app.redis.cleanCompletedJobs}
+            retryJob={app.redis.retryJob}
+            promoteJob={app.redis.promoteJob}
+            removeJob={app.redis.removeJob}
+            setViewConnections={() => app.setView("connections")}
           />
         )}
       </main>

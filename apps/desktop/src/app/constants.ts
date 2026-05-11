@@ -1,7 +1,7 @@
 import { BarChart3, FileCode2, Folder, Grid2X2, KeyRound, Layers3, Link2, ListRestart, Radio, Settings, Workflow } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-export type NavView = "overview" | "connections";
+export type NavView = "overview" | "queues" | "connections";
 export type RangeKey = "1m" | "5m" | "15m" | "1h" | "6h" | "24h";
 
 export const ACTIVE_CONNECTION_STORAGE_KEY = "redon.activeConnectionId";
@@ -16,7 +16,7 @@ export const navItems: ReadonlyArray<{ label: string; view?: NavView; icon: Luci
   { label: "Keys", icon: KeyRound },
   { label: "Types", icon: Layers3 },
   { label: "Metrics", icon: BarChart3 },
-  { label: "Queues", icon: ListRestart },
+  { label: "Queues", view: "queues", icon: ListRestart },
   { label: "Streams", icon: Workflow },
   { label: "Pub/Sub", icon: Radio },
   { label: "Lua", icon: FileCode2 },
