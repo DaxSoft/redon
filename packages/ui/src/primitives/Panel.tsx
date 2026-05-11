@@ -1,12 +1,12 @@
-import type { ReactNode } from "react";
+import * as React from "react";
+import { cn } from "../lib/utils";
 
-export interface PanelProps {
-  readonly children: ReactNode;
-  readonly className?: string;
-}
+export interface PanelProps extends React.HTMLAttributes<HTMLElement> {}
 
-export function Panel({ children, className }: PanelProps) {
-  const classes = className === undefined ? "panel" : `panel ${className}`;
-
-  return <section className={classes}>{children}</section>;
+export function Panel({ children, className, ...props }: PanelProps) {
+  return (
+    <section className={cn("panel", className)} {...props}>
+      {children}
+    </section>
+  );
 }

@@ -99,6 +99,14 @@
   border-radius: 6px;
 }
 
+.ui-input {
+  min-width: 0;
+  color: var(--color-text-primary);
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+
 .ui-button {
   display: inline-flex;
   align-items: center;
@@ -126,15 +134,15 @@
   border-radius: 6px;
 }
 
-.ui-select select {
-  width: 100%;
-  min-height: 34px;
-  padding: 0 32px 0 10px;
-  color: inherit;
-  background: transparent;
-  border: 0;
-  outline: 0;
-  appearance: none;
+.ui-select-content {
+  background: rgba(4, 8, 5, 0.96);
+  border-color: var(--color-border-subtle);
+  color: var(--color-text-primary);
+}
+
+.ui-select-item[data-highlighted] {
+  background: rgba(30, 255, 90, 0.12);
+  color: var(--color-accent);
 }
 
 .ui-select svg {
@@ -282,6 +290,10 @@
 .saved-connection-row strong,
 .saved-connection-row small {
   display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .saved-connection-row small {
@@ -314,6 +326,8 @@
   box-shadow:
     0 0 0 1px rgba(30, 255, 90, 0.03),
     0 12px 32px rgba(0, 0, 0, 0.36);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .panel-header,
@@ -554,6 +568,18 @@
   text-align: left;
 }
 
+.key-row span,
+.key-row em,
+.key-row strong,
+.queue-row strong,
+.queue-row small,
+.queue-row em {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .key-row em,
 .key-row strong {
   color: var(--color-text-muted);
@@ -584,6 +610,10 @@
   color: var(--color-text-primary);
   font-size: 12px;
   font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .type-tabs,
@@ -606,6 +636,7 @@ table {
   color: var(--color-text-secondary);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
+  table-layout: fixed;
 }
 
 th,
@@ -615,6 +646,8 @@ td {
   border: 1px solid rgba(30, 255, 90, 0.1);
   text-align: left;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 th {
@@ -637,6 +670,8 @@ th {
   border: 1px solid var(--color-border-subtle);
   font-size: 12px;
   line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .queue-grid {
@@ -783,12 +818,17 @@ th {
 .connection-card {
   margin-top: auto;
   padding: 10px;
+  min-width: 0;
 }
 
 .connection-name {
   padding-bottom: 8px;
   border-bottom: 1px solid var(--color-border-subtle);
   font-size: 12px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .connection-card dl {
@@ -807,6 +847,10 @@ th {
 .connection-card dd {
   margin: 0;
   text-align: right;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 a {
@@ -847,3 +891,5 @@ a {
     grid-template-columns: 1fr;
   }
 }
+  min-width: 0;
+  min-width: 0;

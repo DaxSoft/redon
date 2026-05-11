@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Input } from "./Input";
 
 export interface CommandInputProps {
   readonly icon?: ReactNode;
@@ -9,7 +10,7 @@ export function CommandInput({ icon, placeholder }: CommandInputProps) {
   return (
     <label className="command-input">
       {icon}
-      <input aria-label={placeholder} placeholder={placeholder} />
+      <Input aria-label={placeholder} placeholder={placeholder} />
     </label>
   );
 }

@@ -774,9 +774,8 @@ export function App() {
             <span>Connection</span>
             <Select
               value={activeProfileId || ""}
-              onChange={(event) => {
+              onValueChange={(nextId) => {
                 setConnectionError(null);
-                const nextId = event.target.value;
                 tryOpenSavedConnection(nextId).catch((error) => {
                   setConnectionError(error instanceof Error ? error.message : "Could not open selected connection.");
                 });
