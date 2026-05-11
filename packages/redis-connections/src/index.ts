@@ -41,6 +41,7 @@ export function createRuntimeClient(input: OpenConnectionInput): RedisRuntimeCli
     username: input.profile.username,
     password: input.password,
     database: input.profile.database,
-    tlsEnabled: input.profile.tlsEnabled
+    tlsEnabled: input.profile.tlsEnabled,
+    tlsAllowSelfSigned: input.profile.tlsAllowSelfSigned
   });
 }

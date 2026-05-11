@@ -82,6 +82,7 @@ app.post("/ipc/connection.listProfiles", async (req, res) => {
       success: true,
       data: profiles.map(p => ({
         ...p,
+        tlsAllowSelfSigned: p.tlsAllowSelfSigned ?? false,
         tags: p.tags ? JSON.parse(p.tags) : []
       }))
     });
@@ -99,7 +100,7 @@ app.post("/ipc/connection.createProfile", async (req, res) => {
         tags: JSON.stringify(parsed.tags)
       }
     });
-    res.json({ success: true, data: { ...profile, tags: parsed.tags } });
+    res.json({ success: true, data: { ...profile, tlsAllowSelfSigned: profile.tlsAllowSelfSigned ?? false, tags: parsed.tags } });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -126,7 +127,7 @@ app.post("/ipc/connection.open", async (req, res) => {
     }
 
     const runtimeClient = createRuntimeClient({
-        profile: { ...profile, tags: profile.tags ? JSON.parse(profile.tags) : [] },
+        profile: { ...profile, tlsAllowSelfSigned: profile.tlsAllowSelfSigned ?? false, tags: profile.tags ? JSON.parse(profile.tags) : [] },
         password: null 
     });
     

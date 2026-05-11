@@ -15,6 +15,7 @@ model ConnectionProfile {
   username      String?
   database      Int      @default(0)
   tlsEnabled    Boolean  @default(false)
+  tlsAllowSelfSigned Boolean @default(false)
   credentialRef String?
   color         String?
   tags          String?

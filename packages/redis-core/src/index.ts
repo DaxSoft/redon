@@ -14,6 +14,7 @@ export interface RedisConnectionOptions {
   readonly password: string | null;
   readonly database: number;
   readonly tlsEnabled: boolean;
+  readonly tlsAllowSelfSigned: boolean;
 }
 
 export interface RedisRuntimeClient {
@@ -28,9 +29,12 @@ export function createRedisClient(connectionId: string, options: RedisConnection
     username: options.username ?? undefined,
     password: options.password ?? undefined,
     db: options.database,
-    tls: options.tlsEnabled ? {} : undefined,
+    tls: options.tlsEnabled ? { rejectUnauthorized: !options.tlsAllowSelfSigned } : undefined,
     lazyConnect: true,
     maxRetriesPerRequest: 2
+  });
+  client.on("error", () => {
+    // Errors are handled by callers during connect/test flows.
   });
 
   return {

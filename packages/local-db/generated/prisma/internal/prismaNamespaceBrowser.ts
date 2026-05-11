@@ -80,6 +80,7 @@ export const ConnectionProfileScalarFieldEnum = {
   username: 'username',
   database: 'database',
   tlsEnabled: 'tlsEnabled',
+  tlsAllowSelfSigned: 'tlsAllowSelfSigned',
   credentialRef: 'credentialRef',
   color: 'color',
   tags: 'tags',

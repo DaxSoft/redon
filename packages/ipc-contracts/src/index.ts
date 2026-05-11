@@ -14,6 +14,7 @@ export const connectionProfileSchema = z.object({
   username: z.string().nullable(),
   database: z.number().int().min(0),
   tlsEnabled: z.boolean(),
+  tlsAllowSelfSigned: z.boolean(),
   credentialRef: z.string().nullable(),
   color: z.string().nullable(),
   tags: z.array(z.string())

@@ -24,7 +24,7 @@ export function MetricCard({ label, value, detail, icon, sparkline = false, spar
         <em>{trend === "up" ? "↑" : "↓"} {detail}</em>
       </div>
       {icon !== undefined ? <i>{icon}</i> : null}
-      {sparkline ? <Sparkline compact={true} danger={danger} data={sparklineData} /> : null}
+      {sparkline ? <Sparkline compact={true} danger={danger} {...(sparklineData === undefined ? {} : { data: sparklineData })} /> : null}
     </article>
   );
 }
