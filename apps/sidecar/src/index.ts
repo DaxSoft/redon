@@ -23,42 +23,13 @@ import {
   getTelemetryCommand
 } from "@redon/ipc-contracts";
 import { readKeySummary } from "@redon/redis-core";
-import { Queue } from "bullmq";
+import { BullMqService } from "./bullmq-service.js";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const activeClients = new Map<string, any>();
-
-type BullJobStatus =
-  | "waiting"
-  | "active"
-  | "delayed"
-  | "completed"
-  | "failed"
-  | "retrying"
-  | "stalled"
-  | "paused"
-  | "prioritized"
-  | "waiting-children";
-
-function createQueue(runtimeClient: any, queueName: string, prefix?: string) {
-  return new Queue(queueName, { connection: runtimeClient.client, prefix: prefix ?? "bull" });
-}
-
-function mapBullJobStatus(state: string): BullJobStatus {
-  if (state === "waiting-children") return "waiting-children";
-  if (state === "prioritized") return "prioritized";
-  if (state === "paused") return "paused";
-  if (state === "stalled") return "stalled";
-  if (state === "retrying") return "retrying";
-  if (state === "failed") return "failed";
-  if (state === "completed") return "completed";
-  if (state === "delayed") return "delayed";
-  if (state === "active") return "active";
-  return "waiting";
-}
 
 setInterval(async () => {
     for (const [connectionId, runtimeClient] of activeClients.entries()) {
@@ -286,54 +257,8 @@ app.post("/ipc/bullmq.listQueues", async (req, res) => {
         const parsed = listQueuesCommand.requestSchema.parse(req.body);
         const runtimeClient = activeClients.get(parsed.connectionId);
         if (!runtimeClient) throw new Error("Connection not open");
-
-        let cursor = "0";
-        const metaKeys: string[] = [];
-        do {
-            const [next, keys] = await runtimeClient.client.scan(cursor, "MATCH", "bull:*:meta", "COUNT", 1000);
-            cursor = next;
-            metaKeys.push(...keys);
-        } while (cursor !== "0");
-
-        const uniqueQueueRefs = new Map<string, { name: string; prefix: string }>();
-        for (const metaKey of metaKeys) {
-            const parts = metaKey.split(":");
-            if (parts.length < 3) continue;
-
-            const prefix = parts[0] ?? "bull";
-            const name = parts.slice(1, parts.length - 1).join(":");
-            if (name.length === 0) continue;
-            uniqueQueueRefs.set(`${prefix}:${name}`, { name, prefix });
-        }
-
-        const result: Array<{
-            name: string;
-            prefix: string;
-            waiting: number;
-            active: number;
-            delayed: number;
-            completed: number;
-            failed: number;
-            paused: boolean;
-        }> = [];
-
-        for (const queueRef of uniqueQueueRefs.values()) {
-            const queue = createQueue(runtimeClient, queueRef.name, queueRef.prefix);
-            const counts = await queue.getJobCounts("waiting", "active", "delayed", "completed", "failed", "paused");
-            const paused = await queue.isPaused();
-            result.push({
-                name: queueRef.name,
-                prefix: queueRef.prefix,
-                waiting: counts["waiting"] ?? 0,
-                active: counts["active"] ?? 0,
-                delayed: counts["delayed"] ?? 0,
-                completed: counts["completed"] ?? 0,
-                failed: counts["failed"] ?? 0,
-                paused
-            });
-        }
-
-        result.sort((a, b) => a.name.localeCompare(b.name));
+        const service = new BullMqService(runtimeClient);
+        const result = await service.listQueues();
         res.json({ success: true, data: result });
     } catch (error: any) {
         res.status(500).json({ success: false, error: error.message });
@@ -345,53 +270,8 @@ app.post("/ipc/bullmq.listJobs", async (req, res) => {
         const parsed = listJobsCommand.requestSchema.parse(req.body);
         const runtimeClient = activeClients.get(parsed.connectionId);
         if (!runtimeClient) throw new Error("Connection not open");
-
-        const queue = createQueue(runtimeClient, parsed.queueName, parsed.prefix);
-        const jobs = await queue.getJobs(
-            [
-                "waiting",
-                "active",
-                "delayed",
-                "completed",
-                "failed",
-                "paused",
-                "prioritized",
-                "waiting-children"
-            ],
-            0,
-            249,
-            false
-        );
-
-        const result = await Promise.all(
-            jobs.map(async (job) => {
-                const state = await job.getState();
-                const jobId = job.id?.toString() ?? "";
-                const jobLogs = jobId.length > 0 ? await queue.getJobLogs(jobId, 0, 0, true) : { logs: [], count: 0 };
-
-                return {
-                    id: jobId,
-                    queueName: parsed.queueName,
-                    name: job.name,
-                    status: mapBullJobStatus(state),
-                    attemptsMade: job.attemptsMade,
-                    attemptsLimit: job.opts.attempts ?? null,
-                    progress: typeof job.progress === "number" ? job.progress : null,
-                    createdAt: job.timestamp ? new Date(job.timestamp).toISOString() : null,
-                    processedAt: job.processedOn ? new Date(job.processedOn).toISOString() : null,
-                    finishedAt: job.finishedOn ? new Date(job.finishedOn).toISOString() : null,
-                    durationMs: job.finishedOn && job.processedOn ? job.finishedOn - job.processedOn : null,
-                    processedBy: job.processedBy ?? null,
-                    failedReason: job.failedReason ? job.failedReason : null,
-                    stacktrace: Array.isArray(job.stacktrace) ? job.stacktrace : [],
-                    data: job.data,
-                    opts: job.opts,
-                    returnValue: job.returnvalue ?? null,
-                    logsCount: jobLogs.count
-                };
-            })
-        );
-
+        const service = new BullMqService(runtimeClient);
+        const result = await service.listJobs(parsed.queueName, parsed.prefix);
         res.json({ success: true, data: result });
     } catch (error: any) {
         res.status(500).json({ success: false, error: error.message });
@@ -403,9 +283,8 @@ app.post("/ipc/bullmq.pauseQueue", async (req, res) => {
         const parsed = pauseQueueCommand.requestSchema.parse(req.body);
         const runtimeClient = activeClients.get(parsed.connectionId);
         if (!runtimeClient) throw new Error("Connection not open");
-
-        const queue = createQueue(runtimeClient, parsed.queueName, parsed.prefix);
-        await queue.pause();
+        const service = new BullMqService(runtimeClient);
+        await service.pauseQueue(parsed.queueName, parsed.prefix);
         res.json({ success: true, data: { success: true } });
     } catch (error: any) {
         res.status(500).json({ success: false, error: error.message });
@@ -417,9 +296,8 @@ app.post("/ipc/bullmq.resumeQueue", async (req, res) => {
         const parsed = resumeQueueCommand.requestSchema.parse(req.body);
         const runtimeClient = activeClients.get(parsed.connectionId);
         if (!runtimeClient) throw new Error("Connection not open");
-
-        const queue = createQueue(runtimeClient, parsed.queueName, parsed.prefix);
-        await queue.resume();
+        const service = new BullMqService(runtimeClient);
+        await service.resumeQueue(parsed.queueName, parsed.prefix);
         res.json({ success: true, data: { success: true } });
     } catch (error: any) {
         res.status(500).json({ success: false, error: error.message });
@@ -431,9 +309,8 @@ app.post("/ipc/bullmq.retryFailedJobs", async (req, res) => {
         const parsed = retryFailedJobsCommand.requestSchema.parse(req.body);
         const runtimeClient = activeClients.get(parsed.connectionId);
         if (!runtimeClient) throw new Error("Connection not open");
-
-        const queue = createQueue(runtimeClient, parsed.queueName, parsed.prefix);
-        await queue.retryJobs({ state: "failed" });
+        const service = new BullMqService(runtimeClient);
+        await service.retryFailedJobs(parsed.queueName, parsed.prefix);
         res.json({ success: true, data: { success: true } });
     } catch (error: any) {
         res.status(500).json({ success: false, error: error.message });
@@ -445,9 +322,8 @@ app.post("/ipc/bullmq.cleanCompletedJobs", async (req, res) => {
         const parsed = cleanCompletedJobsCommand.requestSchema.parse(req.body);
         const runtimeClient = activeClients.get(parsed.connectionId);
         if (!runtimeClient) throw new Error("Connection not open");
-
-        const queue = createQueue(runtimeClient, parsed.queueName, parsed.prefix);
-        await queue.clean(24 * 60 * 60 * 1000, 5000, "completed");
+        const service = new BullMqService(runtimeClient);
+        await service.cleanCompletedJobs(parsed.queueName, parsed.prefix);
         res.json({ success: true, data: { success: true } });
     } catch (error: any) {
         res.status(500).json({ success: false, error: error.message });
@@ -459,11 +335,8 @@ app.post("/ipc/bullmq.retryJob", async (req, res) => {
         const parsed = retryJobCommand.requestSchema.parse(req.body);
         const runtimeClient = activeClients.get(parsed.connectionId);
         if (!runtimeClient) throw new Error("Connection not open");
-
-        const queue = createQueue(runtimeClient, parsed.queueName, parsed.prefix);
-        const job = await queue.getJob(parsed.jobId);
-        if (!job) throw new Error("Job not found");
-        await job.retry();
+        const service = new BullMqService(runtimeClient);
+        await service.retryJob(parsed.queueName, parsed.jobId, parsed.prefix);
         res.json({ success: true, data: { success: true } });
     } catch (error: any) {
         res.status(500).json({ success: false, error: error.message });
@@ -475,11 +348,8 @@ app.post("/ipc/bullmq.promoteJob", async (req, res) => {
         const parsed = promoteJobCommand.requestSchema.parse(req.body);
         const runtimeClient = activeClients.get(parsed.connectionId);
         if (!runtimeClient) throw new Error("Connection not open");
-
-        const queue = createQueue(runtimeClient, parsed.queueName, parsed.prefix);
-        const job = await queue.getJob(parsed.jobId);
-        if (!job) throw new Error("Job not found");
-        await job.promote();
+        const service = new BullMqService(runtimeClient);
+        await service.promoteJob(parsed.queueName, parsed.jobId, parsed.prefix);
         res.json({ success: true, data: { success: true } });
     } catch (error: any) {
         res.status(500).json({ success: false, error: error.message });
@@ -491,11 +361,8 @@ app.post("/ipc/bullmq.removeJob", async (req, res) => {
         const parsed = removeJobCommand.requestSchema.parse(req.body);
         const runtimeClient = activeClients.get(parsed.connectionId);
         if (!runtimeClient) throw new Error("Connection not open");
-
-        const queue = createQueue(runtimeClient, parsed.queueName, parsed.prefix);
-        const job = await queue.getJob(parsed.jobId);
-        if (!job) throw new Error("Job not found");
-        await job.remove();
+        const service = new BullMqService(runtimeClient);
+        await service.removeJob(parsed.queueName, parsed.jobId, parsed.prefix);
         res.json({ success: true, data: { success: true } });
     } catch (error: any) {
         res.status(500).json({ success: false, error: error.message });

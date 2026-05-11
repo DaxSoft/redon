@@ -3,7 +3,8 @@
 .app-root {
   display: grid;
   grid-template-columns: 244px minmax(0, 1fr);
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background:
     radial-gradient(circle at 20% 0%, rgba(30, 255, 90, 0.08), transparent 28%),
     radial-gradient(circle at 80% 20%, rgba(30, 255, 90, 0.04), transparent 32%),
@@ -15,11 +16,12 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   padding: 18px 12px 16px;
   background: linear-gradient(180deg, rgba(8, 31, 16, 0.72), rgba(4, 8, 5, 0.88));
   backdrop-filter: blur(18px);
   border-right: 1px solid var(--color-border-subtle);
+  overflow: auto;
 }
 
 .brand {
@@ -69,6 +71,8 @@
 
 .main-shell {
   min-width: 0;
+  height: 100vh;
+  overflow: auto;
 }
 
 .topbar {
@@ -1154,6 +1158,482 @@ th {
   font-size: 12px;
 }
 
+.bullmq-stat-cards {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(112px, 1fr));
+  gap: 6px;
+}
+
+.bullmq-stat-cards-compact {
+  gap: 5px;
+}
+
+.bullmq-stat-card {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  min-height: 58px;
+  padding: 8px 9px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
+  background: rgba(4, 8, 5, 0.56);
+  min-width: 0;
+}
+
+.bullmq-stat-card span {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.bullmq-stat-card strong {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--color-accent);
+}
+
+.bullmq-stat-card svg {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  opacity: 0.85;
+}
+
+.bullmq-stat-card-success strong,
+.bullmq-stat-card-success svg {
+  color: var(--color-success);
+}
+
+.bullmq-stat-card-info strong,
+.bullmq-stat-card-info svg {
+  color: var(--color-info);
+}
+
+.bullmq-stat-card-warning strong,
+.bullmq-stat-card-warning svg {
+  color: var(--color-warning);
+}
+
+.bullmq-stat-card-danger strong,
+.bullmq-stat-card-danger svg {
+  color: var(--color-danger);
+}
+
+.queues-v2-workspace {
+  gap: 9px;
+}
+
+.queues-v2-headline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.queues-v2-headline h2 {
+  margin: 0;
+  font-size: 31px;
+  line-height: 1;
+}
+
+.queues-v2-headline p {
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.queues-v2-headline-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.queues-v2-auto-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.queues-v2-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.queues-v2-kpis {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(118px, 1fr));
+  gap: 8px;
+}
+
+.queues-v2-kpi-card {
+  position: relative;
+  min-height: 98px;
+  padding: 8px 10px;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+}
+
+.queues-v2-kpi-card span {
+  color: var(--color-text-muted);
+  font-size: 10px;
+}
+
+.queues-v2-kpi-card strong {
+  color: var(--color-accent);
+  font-size: 35px;
+  line-height: 1;
+}
+
+.queues-v2-kpi-card small {
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
+
+.queues-v2-kpi-card .sparkline {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 70px;
+  height: 30px;
+}
+
+.queues-v2-kpi-danger strong {
+  color: var(--color-danger);
+}
+
+.queues-v2-top-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 5fr) minmax(290px, 2fr) minmax(330px, 2fr);
+}
+
+.queues-v2-panel-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+}
+
+.queues-v2-chart {
+  height: 250px;
+  margin: 4px 10px 10px;
+}
+
+.queues-v2-health-content {
+  display: grid;
+  grid-template-columns: 138px 1fr;
+  gap: 8px;
+  padding: 4px 10px 10px;
+}
+
+.queues-v2-donut-wrap {
+  height: 150px;
+}
+
+.queues-v2-health-rows {
+  display: grid;
+  gap: 4px;
+}
+
+.queues-v2-health-rows > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 26px;
+  align-items: center;
+  padding: 0 8px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 5px;
+  background: rgba(4, 8, 5, 0.52);
+}
+
+.queues-v2-health-rows span {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.queues-v2-health-rows strong {
+  color: var(--color-text-primary);
+  font-size: 11px;
+}
+
+.queues-v2-job-inspector {
+  display: grid;
+  grid-template-rows: max-content max-content max-content max-content minmax(0, 1fr) max-content;
+  min-height: 0;
+}
+
+.queues-v2-job-inspector-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 10px 8px;
+}
+
+.queues-v2-action-btn {
+  min-height: 28px;
+  padding: 0 8px;
+  font-size: 11px;
+  flex: 1 1 calc(25% - 6px);
+  min-width: 0;
+}
+
+.queues-v2-action-btn-icon {
+  min-height: 28px;
+  padding: 0 8px;
+  flex: 0 0 auto;
+}
+
+.queues-v2-job-inspector-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 10px 8px;
+}
+
+.queues-v2-job-inspector-tabs button {
+  min-height: 26px;
+  padding: 0 4px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.queues-v2-job-inspector-tabs button.active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-border-strong);
+}
+
+.queues-v2-payload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px 8px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.queues-v2-job-payload {
+  min-height: 180px;
+  margin: 0 10px 10px;
+  border: 1px solid var(--color-border-subtle);
+  background: rgba(4, 8, 5, 0.64);
+}
+
+.queues-v2-job-payload pre {
+  margin: 0;
+  height: 100%;
+  overflow: auto;
+  padding: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.queues-v2-job-details-list {
+  display: grid;
+  gap: 4px;
+  padding: 0 10px 10px;
+}
+
+.queues-v2-job-details-list > div {
+  display: grid;
+  gap: 2px;
+}
+
+.queues-v2-job-details-list span {
+  color: var(--color-text-muted);
+  font-size: 10px;
+}
+
+.queues-v2-job-details-list strong {
+  color: var(--color-text-primary);
+  font-size: 12px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queues-v2-bottom-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(250px, 1.3fr) minmax(0, 3fr) minmax(260px, 1.2fr);
+}
+
+.queues-v2-queue-list-panel .command-input {
+  margin: 8px;
+  width: calc(100% - 16px);
+}
+
+.queues-v2-list {
+  display: grid;
+  gap: 4px;
+  max-height: 518px;
+  overflow: auto;
+  padding: 0 8px 8px;
+}
+
+.queues-v2-list-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 80px 22px;
+  gap: 6px;
+  align-items: center;
+  min-height: 58px;
+  padding: 7px 8px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
+  background: rgba(4, 8, 5, 0.52);
+  color: var(--color-text-secondary);
+  text-align: left;
+}
+
+.queues-v2-list-item strong,
+.queues-v2-list-item small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queues-v2-list-item strong {
+  color: var(--color-text-primary);
+  font-size: 13px;
+}
+
+.queues-v2-list-item small {
+  color: var(--color-text-muted);
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.queues-v2-list-item.active {
+  color: var(--color-accent);
+  border-color: var(--color-border-strong);
+  background: rgba(30, 255, 90, 0.08);
+}
+
+.queues-v2-list-item .sparkline {
+  width: 78px;
+  height: 26px;
+}
+
+.queues-v2-center-column {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.queues-v2-selected-queue-panel {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 8px;
+}
+
+.queues-v2-selected-queue-description {
+  margin: 0;
+  padding: 0 10px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.queues-v2-jobs-table-panel {
+  min-width: 0;
+}
+
+.queues-v2-jobs-top-tabs {
+  display: flex;
+  gap: 12px;
+  padding: 7px 10px 4px;
+}
+
+.queues-v2-jobs-top-tabs button {
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+  min-height: 24px;
+  font-size: 12px;
+}
+
+.queues-v2-jobs-top-tabs button.active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-border-strong);
+}
+
+.queues-v2-jobs-filters {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) 145px 145px max-content max-content;
+  align-items: center;
+}
+
+.queues-v2-progress-cell {
+  display: grid;
+  gap: 4px;
+}
+
+.queues-v2-progress-cell span {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.queues-v2-progress-cell div {
+  width: 100%;
+  height: 7px;
+  background: rgba(4, 8, 5, 0.72);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.queues-v2-progress-cell i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #2a75ff, #58d2ff);
+}
+
+.queues-v2-pagination {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.queues-v2-pagination .ui-select {
+  width: 80px;
+}
+
+.queues-v2-side-metrics-panel {
+  display: grid;
+  align-content: start;
+}
+
+.queues-v2-side-metric-row {
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.queues-v2-side-metric-row span {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.queues-v2-side-metric-row strong {
+  color: var(--color-accent);
+  font-size: 21px;
+  line-height: 1;
+}
+
+.queues-v2-side-metric-row .sparkline {
+  height: 24px;
+}
+
+.queue-mini-chart {
+  height: 26px;
+  width: 100%;
+}
+
 .badge,
 .status-dot {
   display: inline-flex;
@@ -1288,5 +1768,33 @@ a {
 
   .queues-selected-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bullmq-stat-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .queues-v2-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .queues-v2-top-grid,
+  .queues-v2-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .queues-v2-jobs-filters {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .queues-v2-action-btn {
+    flex: 1 1 calc(50% - 6px);
+  }
+}
+
+@media (max-width: 720px) {
+  .queues-v2-action-btn {
+    flex: 1 1 100%;
   }
 }

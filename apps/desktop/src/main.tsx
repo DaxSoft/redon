@@ -1,4 +1,5 @@
 import "@redon/design-system/styles.css";
+import "./global.css";
 import "./styles.css";
 
 import React from "react";

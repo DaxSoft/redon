@@ -1,20 +1,15 @@
 import {
   Activity,
-  CheckCircle2,
   Clock3,
   Copy,
   Database,
   Gauge,
   Link2,
-  PauseCircle,
-  Play,
-  Plus,
   RefreshCw,
   Search,
   Server,
   ShieldCheck,
   Trash2,
-  TriangleAlert,
   Zap,
 } from "lucide-react";
 import ReactECharts from "echarts-for-react";
@@ -36,6 +31,7 @@ import {
   StatusDot,
 } from "@redon/ui";
 import { RANGE_TO_MINUTES, RangeKey, TIME_RANGES } from "../constants";
+import { BullQueueStatCards } from "../components/BullQueueStatCards";
 
 function statusTone(status: string): "success" | "info" | "warning" | "danger" {
   if (status === "active") return "info";
@@ -68,6 +64,10 @@ export function OverviewView(props: OverviewViewProps) {
   const [valueViewMode, setValueViewMode] = useState<"raw" | "json">("raw");
   const [keySearch, setKeySearch] = useState("");
   const [keysPage, setKeysPage] = useState(1);
+  const [queueSearch, setQueueSearch] = useState("");
+  const [queuePage, setQueuePage] = useState(1);
+  const [jobSearch, setJobSearch] = useState("");
+  const [jobPage, setJobPage] = useState(1);
 
   if (!props.activeProfileId) {
     return (
@@ -238,6 +238,31 @@ export function OverviewView(props: OverviewViewProps) {
       },
     ],
   };
+
+  const normalizedQueueSearch = queueSearch.trim().toLowerCase();
+  const filteredOverviewQueues =
+    normalizedQueueSearch.length > 0
+      ? props.queues.filter((queue) => queue.name.toLowerCase().includes(normalizedQueueSearch))
+      : props.queues;
+  const queuePerPage = 10;
+  const queuePageCount = Math.max(1, Math.ceil(filteredOverviewQueues.length / queuePerPage));
+  const clampedQueuePage = Math.min(queuePage, queuePageCount);
+  const pagedOverviewQueues = filteredOverviewQueues.slice((clampedQueuePage - 1) * queuePerPage, clampedQueuePage * queuePerPage);
+
+  const normalizedJobSearch = jobSearch.trim().toLowerCase();
+  const filteredOverviewJobs =
+    normalizedJobSearch.length > 0
+      ? props.jobs.filter(
+          (job) =>
+            job.id.toLowerCase().includes(normalizedJobSearch) ||
+            job.name.toLowerCase().includes(normalizedJobSearch) ||
+            job.queueName.toLowerCase().includes(normalizedJobSearch),
+        )
+      : props.jobs;
+  const jobsPerPage = 15;
+  const jobsPageCount = Math.max(1, Math.ceil(filteredOverviewJobs.length / jobsPerPage));
+  const clampedJobPage = Math.min(jobPage, jobsPageCount);
+  const pagedOverviewJobs = filteredOverviewJobs.slice((clampedJobPage - 1) * jobsPerPage, clampedJobPage * jobsPerPage);
 
   return (
     <section className="workspace">
@@ -535,9 +560,17 @@ export function OverviewView(props: OverviewViewProps) {
         <Panel className="queue-list-panel">
           <div className="panel-header">
             <h2>BullMQ Queues</h2>
-            <Button ariaLabel="Add queue" icon={<Plus size={15} />} />
           </div>
-          {props.queues.map((queue) => (
+          <CommandInput
+            icon={<Search size={14} />}
+            placeholder="Filter queues..."
+            value={queueSearch}
+            onChange={(event) => {
+              setQueueSearch(event.target.value);
+              setQueuePage(1);
+            }}
+          />
+          {pagedOverviewQueues.map((queue) => (
             <button
               className={
                 props.selectedQueue === queue.name
@@ -560,58 +593,39 @@ export function OverviewView(props: OverviewViewProps) {
               <Sparkline compact />
             </button>
           ))}
-          <div className="panel-footer">{props.queues.length} queues</div>
+          <div className="panel-footer">
+            <span>{filteredOverviewQueues.length} queues</span>
+            <div className="queues-v2-pagination">
+              <Button type="button" disabled={clampedQueuePage <= 1} onClick={() => setQueuePage((page) => Math.max(1, page - 1))}>
+                Prev
+              </Button>
+              <span>{clampedQueuePage}/{queuePageCount}</span>
+              <Button type="button" disabled={clampedQueuePage >= queuePageCount} onClick={() => setQueuePage((page) => Math.min(queuePageCount, page + 1))}>
+                Next
+              </Button>
+            </div>
+          </div>
         </Panel>
         <div className="jobs-region">
-          <div className="job-metrics">
-            <MetricCard
-              icon={<TriangleAlert size={22} />}
-              label="Waiting"
-              value={props.queues
-                .reduce((sum, queue) => sum + queue.waiting, 0)
-                .toString()}
-              detail="-"
-            />
-            <MetricCard
-              icon={<Play size={22} />}
-              label="Active"
-              value={props.queues
-                .reduce((sum, queue) => sum + queue.active, 0)
-                .toString()}
-              detail="-"
-            />
-            <MetricCard
-              icon={<Clock3 size={22} />}
-              label="Delayed"
-              value={props.queues
-                .reduce((sum, queue) => sum + queue.delayed, 0)
-                .toString()}
-              detail="-"
-            />
-            <MetricCard
-              icon={<CheckCircle2 size={22} />}
-              label="Completed"
-              value={props.queues
-                .reduce((sum, queue) => sum + queue.completed, 0)
-                .toString()}
-              detail="-"
-            />
-            <MetricCard
-              icon={<PauseCircle size={22} />}
-              label="Failed"
-              value={props.queues
-                .reduce((sum, queue) => sum + queue.failed, 0)
-                .toString()}
-              detail="-"
-              danger
-            />
-          </div>
+          <BullQueueStatCards
+            waiting={props.queues.reduce((sum, queue) => sum + queue.waiting, 0)}
+            active={props.queues.reduce((sum, queue) => sum + queue.active, 0)}
+            delayed={props.queues.reduce((sum, queue) => sum + queue.delayed, 0)}
+            completed={props.queues.reduce((sum, queue) => sum + queue.completed, 0)}
+            failed={props.queues.reduce((sum, queue) => sum + queue.failed, 0)}
+            compact
+          />
           <Panel className="jobs-table">
             <div className="panel-header">
               <h2>Jobs</h2>
               <CommandInput
                 icon={<Search size={15} />}
                 placeholder="Search jobs..."
+                value={jobSearch}
+                onChange={(event) => {
+                  setJobSearch(event.target.value);
+                  setJobPage(1);
+                }}
               />
               <Select defaultValue="all-queues">
                 <SelectTrigger>
@@ -639,7 +653,7 @@ export function OverviewView(props: OverviewViewProps) {
                 </tr>
               </thead>
               <tbody>
-                {props.jobs.map((job) => (
+                {pagedOverviewJobs.map((job) => (
                   <tr key={job.id}>
                     <td>{job.id}</td>
                     <td>{job.name}</td>
@@ -663,6 +677,18 @@ export function OverviewView(props: OverviewViewProps) {
                 ))}
               </tbody>
             </table>
+            <div className="panel-footer">
+              <span>{(clampedJobPage - 1) * jobsPerPage + 1}-{Math.min(clampedJobPage * jobsPerPage, filteredOverviewJobs.length)} of {filteredOverviewJobs.length}</span>
+              <div className="queues-v2-pagination">
+                <Button type="button" disabled={clampedJobPage <= 1} onClick={() => setJobPage((page) => Math.max(1, page - 1))}>
+                  Prev
+                </Button>
+                <span>{clampedJobPage}/{jobsPageCount}</span>
+                <Button type="button" disabled={clampedJobPage >= jobsPageCount} onClick={() => setJobPage((page) => Math.min(jobsPageCount, page + 1))}>
+                  Next
+                </Button>
+              </div>
+            </div>
           </Panel>
         </div>
         <Panel className="queue-metrics-panel">
