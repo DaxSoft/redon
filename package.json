@@ -15,7 +15,8 @@
     "test": "turbo run test",
     "format": "prettier --write .",
     "desktop:dev": "turbo run dev --filter=@redon/desktop",
-    "desktop:build": "turbo run build --filter=@redon/desktop"
+    "desktop:build": "turbo run build --filter=@redon/desktop",
+    "sidecar:dev": "turbo run dev --filter=@redon/sidecar"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

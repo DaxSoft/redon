@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-
 import { Sparkline } from "./Sparkline";
 
 export interface MetricCardProps {
@@ -8,11 +7,12 @@ export interface MetricCardProps {
   readonly detail: string;
   readonly icon?: ReactNode;
   readonly sparkline?: boolean;
+  readonly sparklineData?: number[];
   readonly trend?: "up" | "down";
   readonly danger?: boolean;
 }
 
-export function MetricCard({ label, value, detail, icon, sparkline = false, trend = "up", danger = false }: MetricCardProps) {
+export function MetricCard({ label, value, detail, icon, sparkline = false, sparklineData, trend = "up", danger = false }: MetricCardProps) {
   const toneClass = danger ? "metric-card metric-danger" : "metric-card";
 
   return (
@@ -23,7 +23,7 @@ export function MetricCard({ label, value, detail, icon, sparkline = false, tren
         <em>{trend === "up" ? "↑" : "↓"} {detail}</em>
       </div>
       {icon !== undefined ? <i>{icon}</i> : null}
-      {sparkline ? <Sparkline compact={true} danger={danger} /> : null}
+      {sparkline ? <Sparkline compact={true} danger={danger} {...(sparklineData === undefined ? {} : { data: sparklineData })} /> : null}
     </article>
   );
 }

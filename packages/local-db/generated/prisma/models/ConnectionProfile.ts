@@ -44,6 +44,7 @@ export type ConnectionProfileMinAggregateOutputType = {
   username: string | null
   database: number | null
   tlsEnabled: boolean | null
+  tlsAllowSelfSigned: boolean | null
   credentialRef: string | null
   color: string | null
   tags: string | null
@@ -59,6 +60,7 @@ export type ConnectionProfileMaxAggregateOutputType = {
   username: string | null
   database: number | null
   tlsEnabled: boolean | null
+  tlsAllowSelfSigned: boolean | null
   credentialRef: string | null
   color: string | null
   tags: string | null
@@ -74,6 +76,7 @@ export type ConnectionProfileCountAggregateOutputType = {
   username: number
   database: number
   tlsEnabled: number
+  tlsAllowSelfSigned: number
   credentialRef: number
   color: number
   tags: number
@@ -101,6 +104,7 @@ export type ConnectionProfileMinAggregateInputType = {
   username?: true
   database?: true
   tlsEnabled?: true
+  tlsAllowSelfSigned?: true
   credentialRef?: true
   color?: true
   tags?: true
@@ -116,6 +120,7 @@ export type ConnectionProfileMaxAggregateInputType = {
   username?: true
   database?: true
   tlsEnabled?: true
+  tlsAllowSelfSigned?: true
   credentialRef?: true
   color?: true
   tags?: true
@@ -131,6 +136,7 @@ export type ConnectionProfileCountAggregateInputType = {
   username?: true
   database?: true
   tlsEnabled?: true
+  tlsAllowSelfSigned?: true
   credentialRef?: true
   color?: true
   tags?: true
@@ -233,6 +239,7 @@ export type ConnectionProfileGroupByOutputType = {
   username: string | null
   database: number
   tlsEnabled: boolean
+  tlsAllowSelfSigned: boolean
   credentialRef: string | null
   color: string | null
   tags: string | null
@@ -271,6 +278,7 @@ export type ConnectionProfileWhereInput = {
   username?: Prisma.StringNullableFilter<"ConnectionProfile"> | string | null
   database?: Prisma.IntFilter<"ConnectionProfile"> | number
   tlsEnabled?: Prisma.BoolFilter<"ConnectionProfile"> | boolean
+  tlsAllowSelfSigned?: Prisma.BoolFilter<"ConnectionProfile"> | boolean
   credentialRef?: Prisma.StringNullableFilter<"ConnectionProfile"> | string | null
   color?: Prisma.StringNullableFilter<"ConnectionProfile"> | string | null
   tags?: Prisma.StringNullableFilter<"ConnectionProfile"> | string | null
@@ -286,6 +294,7 @@ export type ConnectionProfileOrderByWithRelationInput = {
   username?: Prisma.SortOrderInput | Prisma.SortOrder
   database?: Prisma.SortOrder
   tlsEnabled?: Prisma.SortOrder
+  tlsAllowSelfSigned?: Prisma.SortOrder
   credentialRef?: Prisma.SortOrderInput | Prisma.SortOrder
   color?: Prisma.SortOrderInput | Prisma.SortOrder
   tags?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -304,6 +313,7 @@ export type ConnectionProfileWhereUniqueInput = Prisma.AtLeast<{
   username?: Prisma.StringNullableFilter<"ConnectionProfile"> | string | null
   database?: Prisma.IntFilter<"ConnectionProfile"> | number
   tlsEnabled?: Prisma.BoolFilter<"ConnectionProfile"> | boolean
+  tlsAllowSelfSigned?: Prisma.BoolFilter<"ConnectionProfile"> | boolean
   credentialRef?: Prisma.StringNullableFilter<"ConnectionProfile"> | string | null
   color?: Prisma.StringNullableFilter<"ConnectionProfile"> | string | null
   tags?: Prisma.StringNullableFilter<"ConnectionProfile"> | string | null
@@ -319,6 +329,7 @@ export type ConnectionProfileOrderByWithAggregationInput = {
   username?: Prisma.SortOrderInput | Prisma.SortOrder
   database?: Prisma.SortOrder
   tlsEnabled?: Prisma.SortOrder
+  tlsAllowSelfSigned?: Prisma.SortOrder
   credentialRef?: Prisma.SortOrderInput | Prisma.SortOrder
   color?: Prisma.SortOrderInput | Prisma.SortOrder
   tags?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -342,6 +353,7 @@ export type ConnectionProfileScalarWhereWithAggregatesInput = {
   username?: Prisma.StringNullableWithAggregatesFilter<"ConnectionProfile"> | string | null
   database?: Prisma.IntWithAggregatesFilter<"ConnectionProfile"> | number
   tlsEnabled?: Prisma.BoolWithAggregatesFilter<"ConnectionProfile"> | boolean
+  tlsAllowSelfSigned?: Prisma.BoolWithAggregatesFilter<"ConnectionProfile"> | boolean
   credentialRef?: Prisma.StringNullableWithAggregatesFilter<"ConnectionProfile"> | string | null
   color?: Prisma.StringNullableWithAggregatesFilter<"ConnectionProfile"> | string | null
   tags?: Prisma.StringNullableWithAggregatesFilter<"ConnectionProfile"> | string | null
@@ -357,6 +369,7 @@ export type ConnectionProfileCreateInput = {
   username?: string | null
   database?: number
   tlsEnabled?: boolean
+  tlsAllowSelfSigned?: boolean
   credentialRef?: string | null
   color?: string | null
   tags?: string | null
@@ -372,6 +385,7 @@ export type ConnectionProfileUncheckedCreateInput = {
   username?: string | null
   database?: number
   tlsEnabled?: boolean
+  tlsAllowSelfSigned?: boolean
   credentialRef?: string | null
   color?: string | null
   tags?: string | null
@@ -387,6 +401,7 @@ export type ConnectionProfileUpdateInput = {
   username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   database?: Prisma.IntFieldUpdateOperationsInput | number
   tlsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tlsAllowSelfSigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   credentialRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -402,6 +417,7 @@ export type ConnectionProfileUncheckedUpdateInput = {
   username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   database?: Prisma.IntFieldUpdateOperationsInput | number
   tlsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tlsAllowSelfSigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   credentialRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -417,6 +433,7 @@ export type ConnectionProfileCreateManyInput = {
   username?: string | null
   database?: number
   tlsEnabled?: boolean
+  tlsAllowSelfSigned?: boolean
   credentialRef?: string | null
   color?: string | null
   tags?: string | null
@@ -432,6 +449,7 @@ export type ConnectionProfileUpdateManyMutationInput = {
   username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   database?: Prisma.IntFieldUpdateOperationsInput | number
   tlsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tlsAllowSelfSigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   credentialRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -447,6 +465,7 @@ export type ConnectionProfileUncheckedUpdateManyInput = {
   username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   database?: Prisma.IntFieldUpdateOperationsInput | number
   tlsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tlsAllowSelfSigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   credentialRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -462,6 +481,7 @@ export type ConnectionProfileCountOrderByAggregateInput = {
   username?: Prisma.SortOrder
   database?: Prisma.SortOrder
   tlsEnabled?: Prisma.SortOrder
+  tlsAllowSelfSigned?: Prisma.SortOrder
   credentialRef?: Prisma.SortOrder
   color?: Prisma.SortOrder
   tags?: Prisma.SortOrder
@@ -482,6 +502,7 @@ export type ConnectionProfileMaxOrderByAggregateInput = {
   username?: Prisma.SortOrder
   database?: Prisma.SortOrder
   tlsEnabled?: Prisma.SortOrder
+  tlsAllowSelfSigned?: Prisma.SortOrder
   credentialRef?: Prisma.SortOrder
   color?: Prisma.SortOrder
   tags?: Prisma.SortOrder
@@ -497,6 +518,7 @@ export type ConnectionProfileMinOrderByAggregateInput = {
   username?: Prisma.SortOrder
   database?: Prisma.SortOrder
   tlsEnabled?: Prisma.SortOrder
+  tlsAllowSelfSigned?: Prisma.SortOrder
   credentialRef?: Prisma.SortOrder
   color?: Prisma.SortOrder
   tags?: Prisma.SortOrder
@@ -543,6 +565,7 @@ export type ConnectionProfileSelect<ExtArgs extends runtime.Types.Extensions.Int
   username?: boolean
   database?: boolean
   tlsEnabled?: boolean
+  tlsAllowSelfSigned?: boolean
   credentialRef?: boolean
   color?: boolean
   tags?: boolean
@@ -558,6 +581,7 @@ export type ConnectionProfileSelectCreateManyAndReturn<ExtArgs extends runtime.T
   username?: boolean
   database?: boolean
   tlsEnabled?: boolean
+  tlsAllowSelfSigned?: boolean
   credentialRef?: boolean
   color?: boolean
   tags?: boolean
@@ -573,6 +597,7 @@ export type ConnectionProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   username?: boolean
   database?: boolean
   tlsEnabled?: boolean
+  tlsAllowSelfSigned?: boolean
   credentialRef?: boolean
   color?: boolean
   tags?: boolean
@@ -588,6 +613,7 @@ export type ConnectionProfileSelectScalar = {
   username?: boolean
   database?: boolean
   tlsEnabled?: boolean
+  tlsAllowSelfSigned?: boolean
   credentialRef?: boolean
   color?: boolean
   tags?: boolean
@@ -595,7 +621,7 @@ export type ConnectionProfileSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ConnectionProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "host" | "port" | "username" | "database" | "tlsEnabled" | "credentialRef" | "color" | "tags" | "createdAt" | "updatedAt", ExtArgs["result"]["connectionProfile"]>
+export type ConnectionProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "host" | "port" | "username" | "database" | "tlsEnabled" | "tlsAllowSelfSigned" | "credentialRef" | "color" | "tags" | "createdAt" | "updatedAt", ExtArgs["result"]["connectionProfile"]>
 
 export type $ConnectionProfilePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ConnectionProfile"
@@ -608,6 +634,7 @@ export type $ConnectionProfilePayload<ExtArgs extends runtime.Types.Extensions.I
     username: string | null
     database: number
     tlsEnabled: boolean
+    tlsAllowSelfSigned: boolean
     credentialRef: string | null
     color: string | null
     tags: string | null
@@ -1043,6 +1070,7 @@ export interface ConnectionProfileFieldRefs {
   readonly username: Prisma.FieldRef<"ConnectionProfile", 'String'>
   readonly database: Prisma.FieldRef<"ConnectionProfile", 'Int'>
   readonly tlsEnabled: Prisma.FieldRef<"ConnectionProfile", 'Boolean'>
+  readonly tlsAllowSelfSigned: Prisma.FieldRef<"ConnectionProfile", 'Boolean'>
   readonly credentialRef: Prisma.FieldRef<"ConnectionProfile", 'String'>
   readonly color: Prisma.FieldRef<"ConnectionProfile", 'String'>
   readonly tags: Prisma.FieldRef<"ConnectionProfile", 'String'>

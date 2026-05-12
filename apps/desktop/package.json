@@ -12,6 +12,9 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-slot": "^1.2.3",
     "@redon/bullmq-visualizer": "workspace:*",
     "@redon/design-system": "workspace:*",
     "@redon/ipc-contracts": "workspace:*",
@@ -24,13 +27,20 @@
     "@redon/shell": "workspace:*",
     "@redon/ui": "workspace:*",
     "@tauri-apps/api": "^2.0.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "echarts": "^6.0.0",
+    "echarts-for-react": "^3.0.6",
     "lucide-react": "^0.468.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
+    "tailwind-merge": "^2.6.1",
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
     "@tauri-apps/cli": "^2.0.0",
-    "@vitejs/plugin-react": "^4.3.0"
+    "@vitejs/plugin-react": "^4.3.0",
+    "tailwindcss": "^4.3.0"
   }
 }

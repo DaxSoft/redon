@@ -14,6 +14,7 @@ export interface RedisConnectionOptions {
   readonly password: string | null;
   readonly database: number;
   readonly tlsEnabled: boolean;
+  readonly tlsAllowSelfSigned: boolean;
 }
 
 export interface RedisRuntimeClient {
@@ -22,15 +23,28 @@ export interface RedisRuntimeClient {
 }
 
 export function createRedisClient(connectionId: string, options: RedisConnectionOptions): RedisRuntimeClient {
+  const connectTimeout = process.env["NODE_ENV"] === "production" ? 30000 : 5000;
   const client = new Redis({
     host: options.host,
     port: options.port,
     username: options.username ?? undefined,
     password: options.password ?? undefined,
     db: options.database,
-    tls: options.tlsEnabled ? {} : undefined,
-    lazyConnect: true,
-    maxRetriesPerRequest: 2
+    tls: options.tlsEnabled ? { rejectUnauthorized: !options.tlsAllowSelfSigned } : undefined,
+    enableReadyCheck: false,
+    maxRetriesPerRequest: null,
+    lazyConnect: false,
+    connectTimeout,
+    retryStrategy: (times: number) => {
+      return Math.min(1000 * 2 ** times, 20000);
+    },
+    reconnectOnError: (error: Error) => {
+      const message = error.message;
+      return message.includes("READONLY") || message.includes("timed out") || message.includes("ETIMEDOUT");
+    }
+  });
+  client.on("error", () => {
+    // Errors are handled by callers during connect/test flows.
   });
 
   return {

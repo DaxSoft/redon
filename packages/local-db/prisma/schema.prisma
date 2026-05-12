@@ -15,6 +15,7 @@ model ConnectionProfile {
   username      String?
   database      Int      @default(0)
   tlsEnabled    Boolean  @default(false)
+  tlsAllowSelfSigned Boolean @default(false)
   credentialRef String?
   color         String?
   tags          String?
@@ -53,4 +54,15 @@ model ModuleSetting {
   key       String
   value     String
   updatedAt DateTime @updatedAt
+}
+
+model MetricTelemetry {
+  id               String   @id @default(uuid())
+  connectionId     String
+  queueName        String?
+  timestampIso     String
+  opsPerSecond     Float?
+  usedMemoryBytes  Float?
+  connectedClients Int?
+  hitRate          Float?
 }

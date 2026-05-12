@@ -1,4 +1,6 @@
 import "@redon/design-system/styles.css";
+import "./tailwind.css";
+import "./global.css";
 import "./styles.css";
 
 import React from "react";

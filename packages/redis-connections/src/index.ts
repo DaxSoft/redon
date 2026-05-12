@@ -22,7 +22,6 @@ export async function testConnection(input: OpenConnectionInput): Promise<{ read
   const start = performance.now();
 
   try {
-    await runtime.client.connect();
     await runtime.client.ping();
     return {
       ok: true,
@@ -41,6 +40,7 @@ export function createRuntimeClient(input: OpenConnectionInput): RedisRuntimeCli
     username: input.profile.username,
     password: input.password,
     database: input.profile.database,
-    tlsEnabled: input.profile.tlsEnabled
+    tlsEnabled: input.profile.tlsEnabled,
+    tlsAllowSelfSigned: input.profile.tlsAllowSelfSigned
   });
 }

@@ -66,3 +66,8 @@ export type SavedFilter = Prisma.SavedFilterModel
  * 
  */
 export type ModuleSetting = Prisma.ModuleSettingModel
+/**
+ * Model MetricTelemetry
+ * 
+ */
+export type MetricTelemetry = Prisma.MetricTelemetryModel
